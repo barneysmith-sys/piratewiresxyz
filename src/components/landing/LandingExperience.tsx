@@ -8,10 +8,12 @@
  * so scrolling never re-renders React.
  */
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { launchStore } from "@/components/shell/launch";
 import CapitolScene from "@/components/scene/CapitolScene";
 import IntelligenceDatabase from "@/components/database/IntelligenceDatabase";
 import AppBar from "@/components/shell/AppBar";
+import { getArticles } from "@/lib/data/articles";
 import type { Article, ObservedRecord } from "@/lib/data/types";
 import type { DatasetMode } from "@/lib/data/mode";
 import { researchHref } from "@/lib/research/href";
@@ -23,7 +25,7 @@ export default function LandingExperience() {
   const progress = useRef(0);
   const sceneRef = useRef<HTMLDivElement>(null);
   const [barVisible, setBarVisible] = useState(false);
-  const [launch, setLaunch] = useState<{ q: string; ids?: string[] } | null>(null);
+  const launchQuery = useSyncExternalStore(launchStore.subscribe, launchStore.get, () => null);
   const [mode, setMode] = useState<DatasetMode>("demo");
   const [articles, setArticles] = useState<Article[]>([]);
   const [observed, setObserved] = useState<ObservedRecord[]>([]);
@@ -47,6 +49,13 @@ export default function LandingExperience() {
       })
       .catch((error: unknown) => {
         if ((error as Error).name === "AbortError") return;
+        if (mode === "demo") {
+          setArticles(getArticles());
+          setObserved([]);
+          setArchiveError(null);
+          setLoadingArchive(false);
+          return;
+        }
         setArchiveError((error as Error).message);
         setArticles([]);
         setObserved([]);
@@ -80,11 +89,14 @@ export default function LandingExperience() {
 
   const startResearch = useCallback(
     (q: string, ids?: string[]) => {
-      setLaunch({ q, ids });
       const href = researchHref(q, ids, mode);
       router.prefetch(href);
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      setTimeout(() => router.push(href), reduced ? 0 : 900);
+      if (!reduced) {
+        launchStore.set(q);
+        window.setTimeout(() => launchStore.set(null), 1100);
+      }
+      window.setTimeout(() => router.push(href), reduced ? 0 : 900);
     },
     [router, mode]
   );
@@ -98,7 +110,7 @@ export default function LandingExperience() {
       <AppBar onSearch={(q) => startResearch(q)} visible={barVisible} active="database" />
 
       <div className="relative z-10">
-        <Hero onSubmit={(q) => startResearch(q)} launching={!!launch} nextId="database" marker={mode === "demo" ? "Demo data" : "Observed only"} />
+        <Hero onSubmit={(q) => startResearch(q)} launching={!!launchQuery} nextId="database" marker={mode === "demo" ? "Demo data" : "Observed only"} />
 
         {/* the hand-off: the land settles into the lattice the app sits on */}
         <div aria-hidden className="relative h-[38vh]">
@@ -128,7 +140,7 @@ export default function LandingExperience() {
         </div>
       </div>
 
-      <LaunchOverlay query={launch?.q ?? null} />
+      <LaunchOverlay query={launchQuery} />
     </div>
   );
 }

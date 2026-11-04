@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { z } from "zod";
-import { listArticles } from "@/server/articles/query";
-import { getSession } from "@/server/db/session";
+import { readArticles } from "@/server/gateway";
 import { apiError, apiSuccess } from "@/server/http";
 import { datasetMode, isResponse } from "@/server/dataset";
 import { log } from "@/server/log";
@@ -29,8 +28,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const session = await getSession();
-    const result = await listArticles(session, {
+    const result = await readArticles({
       mode: mode.mode,
       q: parsed.data.q || undefined,
       topic: parsed.data.topic || undefined,

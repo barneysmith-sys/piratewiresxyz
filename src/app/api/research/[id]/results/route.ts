@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { getSession } from "@/server/db/session";
+import { usesBundledDemo } from "@/server/demo/runtime";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
 
@@ -10,6 +10,10 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
 
   try {
+    if (usesBundledDemo()) {
+      return apiError(404, "not_found", "This demo keeps the report in the browser. It is not stored.");
+    }
+    const { getSession } = await import("@/server/db/session");
     const session = await getSession();
     const rows = await session.query<{
       execution_mode: string;

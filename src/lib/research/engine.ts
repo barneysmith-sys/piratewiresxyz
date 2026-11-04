@@ -106,13 +106,26 @@ export class HttpEngine implements ResearchEngine {
   constructor(private endpoint: string) {}
 
   async run(req: ResearchRequest, { signal, onEvent }: { signal: AbortSignal; onEvent: (e: ResearchEvent) => void }) {
-    const res = await fetch(this.endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-      body: JSON.stringify(req),
-      signal,
-    });
-    if (!res.ok || !res.body) throw new Error(`Research endpoint returned ${res.status}`);
+    let res: Response;
+    try {
+      res = await fetch(this.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify(req),
+        signal,
+      });
+    } catch (error) {
+      if (signal.aborted || req.mode === "analytical") throw error;
+      await new SimulatedEngine().run(req, { signal, onEvent });
+      return;
+    }
+    if (!res.ok || !res.body) {
+      if (req.mode !== "analytical") {
+        await new SimulatedEngine().run(req, { signal, onEvent });
+        return;
+      }
+      throw new Error(`Research endpoint returned ${res.status}`);
+    }
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buf = "";

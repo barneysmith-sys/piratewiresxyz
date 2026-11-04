@@ -32,7 +32,7 @@ export default function Hero({ onSubmit, launching, nextId, marker }: Props) {
       {/* soft dark field behind the search so the terrain never fights the text */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[47%] -z-0 h-[46vh] w-[min(1200px,110vw)] -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-[47%] -z-0 h-[46vh] w-full max-w-[1200px] -translate-x-1/2 -translate-y-1/2"
         style={{ background: "radial-gradient(closest-side, rgba(0,0,0,0.78), rgba(0,0,0,0.35) 60%, transparent)" }}
       />
 

@@ -13,7 +13,9 @@ Deploy on Vercel:
 3. Set the environment variables below. Then run `npm run db:migrate` once from a machine that can reach `DIRECT_DATABASE_URL`.
 4. For a demonstration on hosted Postgres, set `SEED_ILLUSTRATIVE=true` for one deployment so the fictional corpus is loaded. Analytical mode still ignores it.
 
-The first request after a cold start applies migrations. On Vercel without `DATABASE_URL`, that database lives in `/tmp` and disappears with the instance.
+On Vercel, leave `DATABASE_URL` unset for the demonstration. The app then serves the 26 bundled illustrative articles from memory. It does not write a database to disk and it does not call an external model. No API key is required. Set `DATABASE_URL` only when a hosted Postgres database should replace that fixture. `PW_STORE=pglite` forces the local sandbox even on Vercel. `PW_STORE=memory` forces the bundled fixture locally.
+
+The public production URL follows `main`. This application is on the pull-request branch until that branch is merged or the Vercel production branch is changed. Preview deployments are behind Vercel Authentication.
 
 Demo mode shows a labelled illustrative corpus. Those records are fictional and are stored with `record_status = illustrative`. Analytical mode reads observed rows only. If none are loaded, the archive and the research report say so. Missing measurements are left blank.
 
@@ -40,7 +42,7 @@ Copy `.env.example` locally, and set the same names in the Vercel project. All o
 
 | Variable | Vercel | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Required for a durable deployment | Runtime connection. Supabase transaction pooler, port 6543. `prepare` is disabled for the pooler. |
+| `DATABASE_URL` | Optional for the demo. Required only when observed rows should be read from Postgres | Runtime connection. Supabase transaction pooler, port 6543. `prepare` is disabled for the pooler. |
 | `DIRECT_DATABASE_URL` | Used by `npm run db:migrate`, not by the running app | Direct connection, port 5432. |
 | `SEED_ILLUSTRATIVE` | Optional | `true` loads the fictional corpus into that database. The local and `/tmp` sandboxes load it without this flag. |
 | `NEXT_PUBLIC_RESEARCH_ENDPOINT` | Leave unset | Override only if research is hosted elsewhere. The default is same-origin `/api/research/stream`. |

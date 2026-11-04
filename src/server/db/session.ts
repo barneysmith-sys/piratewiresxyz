@@ -1,14 +1,12 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { PGlite } from "@electric-sql/pglite";
 import postgres from "postgres";
 import { seedIllustrativeCorpus } from "@/server/demo/seed";
 import { getServerEnv } from "@/server/env";
 import { applyMigrations, type SqlSession } from "./migrate";
 
-/** Local disk, or the only writable directory on Vercel when no Postgres URL is set. */
-export function resolveSandboxDirectory(env: Record<string, string | undefined> = process.env): string {
-  if (env.VERCEL) return "/tmp/pw-intelligence-sandbox";
+/** Local PGlite directory. Vercel does not use this; it serves the bundled corpus. */
+export function resolveSandboxDirectory(): string {
   return path.join(process.cwd(), "data", "sandbox");
 }
 
@@ -40,6 +38,7 @@ async function open(): Promise<SqlSession> {
     });
     session = postgresSession(sql);
   } else {
+    const { PGlite } = await import("@electric-sql/pglite");
     const sandboxDirectory = resolveSandboxDirectory();
     mkdirSync(path.dirname(sandboxDirectory), { recursive: true });
     const database = new PGlite(sandboxDirectory);
@@ -62,8 +61,8 @@ async function open(): Promise<SqlSession> {
 }
 
 /**
- * One server session. Postgres when DATABASE_URL is set. Otherwise a PGlite
- * sandbox: data/sandbox locally, or an ephemeral /tmp database on Vercel.
+ * One server session. Postgres when DATABASE_URL is set. Otherwise a local
+ * PGlite sandbox. Vercel without DATABASE_URL never reaches this function.
  */
 export function getSession(): Promise<SqlSession> {
   opening ??= open().catch((error) => {

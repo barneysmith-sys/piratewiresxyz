@@ -1,24 +1,34 @@
 import { connection } from "next/server";
 import { checkDatabase } from "@/server/db/health";
-import { getSession, resolveSandboxDirectory } from "@/server/db/session";
+import { usesBundledDemo } from "@/server/demo/runtime";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
 
 export const maxDuration = 60;
 
 export async function GET() {
-  // Health depends on the live environment. Do not prerender it.
   await connection();
 
   try {
+    if (usesBundledDemo()) {
+      return apiSuccess({
+        service: "pw-intelligence",
+        status: "ok",
+        database: "unconfigured",
+        store: "bundled-fixtures",
+        phase: "integrated",
+      });
+    }
+
     const database = await checkDatabase();
     if (database.status === "unconfigured") {
+      const { getSession } = await import("@/server/db/session");
       await getSession();
       return apiSuccess({
         service: "pw-intelligence",
         status: "ok",
         database: "sandbox",
-        store: resolveSandboxDirectory().startsWith("/tmp/") ? "ephemeral-pglite" : "local-pglite",
+        store: "local-pglite",
         phase: "integrated",
       });
     }

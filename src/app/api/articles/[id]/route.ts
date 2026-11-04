@@ -1,6 +1,5 @@
 import { connection } from "next/server";
-import { listArticles } from "@/server/articles/query";
-import { getSession } from "@/server/db/session";
+import { readArticles } from "@/server/gateway";
 import { apiError, apiSuccess } from "@/server/http";
 import { datasetMode, isResponse } from "@/server/dataset";
 import { log } from "@/server/log";
@@ -14,8 +13,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
 
   try {
-    const session = await getSession();
-    const result = await listArticles(session, { mode: mode.mode, id, limit: 1 });
+    const result = await readArticles({ mode: mode.mode, id, limit: 1 });
     const article = result.articles[0] ?? null;
     const observed = result.observed[0] ?? null;
     if (!article && !observed) {

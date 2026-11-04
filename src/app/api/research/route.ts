@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { z } from "zod";
-import { executeResearch } from "@/server/research/execute";
-import { getSession } from "@/server/db/session";
+import { runResearch } from "@/server/gateway";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
 
@@ -27,8 +26,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const session = await getSession();
-    const result = await executeResearch(session, parsed.data);
+    const result = await runResearch(parsed.data);
     return apiSuccess({
       requestId: result.requestId,
       mode: parsed.data.mode,

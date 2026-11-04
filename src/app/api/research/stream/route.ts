@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { z } from "zod";
-import { executeResearch } from "@/server/research/execute";
-import { getSession } from "@/server/db/session";
+import { runResearch } from "@/server/gateway";
 import { apiError } from "@/server/http";
 import { log } from "@/server/log";
 
@@ -33,8 +32,7 @@ export async function POST(request: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       };
       try {
-        const session = await getSession();
-        await executeResearch(session, { ...parsed.data, yieldMs: 80 }, send);
+        await runResearch({ ...parsed.data, yieldMs: 420 }, send);
       } catch (error) {
         log("error", "research stream failed", { error: error instanceof Error ? error.name : "unknown" });
         send({ type: "error", message: error instanceof Error ? error.message : "Research failed." });
