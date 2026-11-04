@@ -14,9 +14,10 @@
   --font-display: "Barlow Condensed";
   --font-mono: "IBM Plex Mono";
   --font-sans: "Inter Variable";
-  --pw-void: #000;
-  --pw-paper: #edebe6;
-  --pw-signal: #e3262b;
+  --pw-void: #080d1b;
+  --pw-paper: #f3f0e9;
+  --pw-signal: #e31b2b;
+  --pw-amber: #d9a45b;
 }
 
 @layer base {
@@ -32,8 +33,8 @@
     overflow-x: hidden;
   }
   ::selection {
-    background: rgba(227, 38, 43, 0.85);
-    color: #fff;
+    background: rgba(227, 27, 43, 0.85);
+    color: #f3f0e9;
   }
   :focus-visible {
     outline: 1px solid var(--pw-paper);
@@ -42,7 +43,7 @@
   /* thin, quiet scrollbars inside panels */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+    scrollbar-color: #303b50 transparent;
   }
 }
 
@@ -53,8 +54,7 @@
   }
   /* Hairline panel used across the app */
   .pw-panel {
-    @apply border border-line bg-ink-900/80;
-    backdrop-filter: blur(10px);
+    @apply border border-line bg-ink-900;
   }
   /* Technical corner ticks around a box (used on hero search + panels) */
   .pw-ticks {
@@ -104,7 +104,7 @@
     content: "";
     width: 6px;
     height: 6px;
-    background: #000;
+    background: var(--pw-void);
   }
   /* Dot lattice: the flattened terrain the hero resolves into */
   .pw-lattice {

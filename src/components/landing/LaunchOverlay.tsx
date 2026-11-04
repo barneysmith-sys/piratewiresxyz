@@ -13,11 +13,11 @@ export default function LaunchOverlay({ query }: { query: string | null }) {
   return (
     <div aria-hidden={!on} className={cx("fixed inset-0 z-[60]", on ? "pointer-events-auto" : "pointer-events-none")}>
       {/* two shutters closing on the search line */}
-      <div className={cx("absolute inset-x-0 top-0 h-1/2 origin-top bg-black transition-transform duration-[650ms] ease-in-out-quart", on ? "scale-y-100" : "scale-y-0")} />
-      <div className={cx("absolute inset-x-0 bottom-0 h-1/2 origin-bottom bg-black transition-transform duration-[650ms] ease-in-out-quart", on ? "scale-y-100" : "scale-y-0")} />
+      <div className={cx("absolute inset-x-0 top-0 h-1/2 origin-top bg-void transition-transform duration-[650ms] ease-in-out-quart", on ? "scale-y-100" : "scale-y-0")} />
+      <div className={cx("absolute inset-x-0 bottom-0 h-1/2 origin-bottom bg-void transition-transform duration-[650ms] ease-in-out-quart", on ? "scale-y-100" : "scale-y-0")} />
       <div
         className={cx(
-          "absolute left-1/2 top-1/2 h-px -translate-x-1/2 bg-signal shadow-[0_0_24px_rgba(227,38,43,0.8)] transition-[width,opacity] duration-700 ease-out",
+          "absolute left-1/2 top-1/2 h-px -translate-x-1/2 bg-signal shadow-[0_0_24px_rgba(227,27,43,0.8)] transition-[width,opacity] duration-700 ease-out",
           on ? "w-full opacity-100" : "w-0 opacity-0"
         )}
       />

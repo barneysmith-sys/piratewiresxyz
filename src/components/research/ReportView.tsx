@@ -26,6 +26,38 @@ function Block({ id, index, title, children, className }: { id?: string; index: 
 
 const stageTitle = (id: string) => STAGES.find((s) => s.id === id)?.title ?? id;
 
+function AuthorComparison({ articles, illustrative }: { articles: Article[]; illustrative: boolean }) {
+  const rows = [...articles.reduce((map, article) => {
+    const current = map.get(article.author) ?? { author: article.author, articles: 0, views: 0 };
+    current.articles += 1;
+    current.views += article.metrics.views;
+    map.set(article.author, current);
+    return map;
+  }, new Map<string, { author: string; articles: number; views: number }>()).values()].sort(
+    (a, b) => b.articles - a.articles || b.views - a.views || a.author.localeCompare(b.author),
+  );
+  const max = Math.max(...rows.map((row) => row.articles), 1);
+
+  if (rows.length === 0) {
+    return <p className="font-mono text-[13px] text-mute">No authors in this scope.</p>;
+  }
+
+  return (
+    <ul className="divide-y divide-line-faint border-y border-line">
+      {rows.map((row) => (
+        <li key={row.author} className="grid grid-cols-[minmax(0,1fr)_72px_88px] items-center gap-4 py-3 md:grid-cols-[180px_1fr_88px_88px]">
+          <span className="truncate text-[14px] text-paper">{row.author}</span>
+          <span className="hidden h-1 bg-ink-800 md:block">
+            <span className="block h-1 bg-paper/70" style={{ width: `${(row.articles / max) * 100}%` }} />
+          </span>
+          <span className="text-right font-mono text-[12px] text-paper-dim tabular">{row.articles} {row.articles === 1 ? "piece" : "pieces"}</span>
+          <span className="text-right font-mono text-[12px] text-mute tabular">{illustrative ? `${fmt.compact(row.views)} fixture` : row.views ? fmt.compact(row.views) : "—"}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function ReportView({ report, articles, onOpenArticle }: Props) {
   const byId = new Map(articles.map((a) => [a.id, a]));
   const scoped = report.articleIds.map((id) => byId.get(id)).filter(Boolean) as Article[];
@@ -52,7 +84,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
               <dd className="mt-2 flex items-baseline gap-3">
                 <span className="font-display text-[38px] font-semibold leading-none tabular">{k.value}</span>
                 {k.delta && (
-                  <span className={cx("inline-flex items-center gap-0.5 font-mono text-[12px] tabular", k.deltaTone === "up" ? "text-paper" : k.deltaTone === "down" ? "text-[#FF8A8D]" : "text-mute")}>
+                  <span className={cx("inline-flex items-center gap-0.5 font-mono text-[12px] tabular", k.deltaTone === "up" ? "text-paper" : k.deltaTone === "down" ? "text-amber" : "text-mute")}>
                     {k.deltaTone === "up" ? <ArrowUpRight className="h-3.5 w-3.5" /> : k.deltaTone === "down" ? <ArrowDownRight className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                     {k.delta}
                   </span>
@@ -68,7 +100,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
       <Block id="findings" index="A" title="Findings · evidence-linked">
         <ol className="grid gap-px bg-line md:grid-cols-2">
           {report.findings.map((f) => (
-            <li key={f.id} id={`finding-${f.id}`} className="flex flex-col bg-black p-5 md:p-6">
+            <li key={f.id} id={`finding-${f.id}`} className="flex flex-col bg-ink-950 p-5 md:p-6">
               <div className="flex items-center gap-3 font-mono text-2xs uppercase">
                 <span className="text-signal">{f.id}</span>
                 <span className="text-mute">{stageTitle(f.stage)}</span>
@@ -105,7 +137,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
 
       {/* performance */}
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-8">
-        <Block index="B" title={`Weekly views · ${focusLabel} vs other topics`}>
+        <Block index="B" title={`${report.provenance === "simulated" ? "Weekly fixture views" : "Weekly views"} · ${focusLabel} vs other topics`}>
           <WeeklyTrend data={report.weekly} focusLabel={focusLabel} />
         </Block>
         <Block index="C" title="Topic comparison">
@@ -113,8 +145,17 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
         </Block>
       </div>
 
+      <Block index="D" title="Author comparison">
+        <p className="mb-4 max-w-[68ch] font-mono text-[12px] text-mute">
+          {report.provenance === "simulated"
+            ? "Authors inside this illustrative scope. Counts and fixture views are not a ranking of Pirate Wires writers."
+            : "Primary authors on the observed articles in this scope. Frequency is not an engagement ranking."}
+        </p>
+        <AuthorComparison articles={scoped} illustrative={report.provenance === "simulated"} />
+      </Block>
+
       {/* distribution */}
-      <Block index="D" title="Distribution network">
+      <Block index="E" title="Distribution network">
         <div className="grid gap-8 lg:grid-cols-[1.35fr_1fr]">
           <DistributionNetwork channels={report.channels} articles={ranked.map((r) => r.a).concat(scoped.filter((a) => !ranked.some((r) => r.id === a.id)))} scopeLabel={focusLabel} />
           <ChannelBars rows={report.channels.filter((c) => c.focusImpressions > 0)} />
@@ -122,7 +163,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
       </Block>
 
       {/* article-level */}
-      <Block index="E" title="Article-level analysis">
+      <Block index="F" title="Article-level analysis">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left">
             <thead>
@@ -166,7 +207,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
       </Block>
 
       {/* recommendations */}
-      <Block index="F" title="Growth recommendations">
+      <Block index="G" title="Growth recommendations">
         <ol className="divide-y divide-line border-y border-line">
           {report.recommendations.map((r, i) => (
             <li key={r.id} className="grid gap-4 py-6 md:grid-cols-[64px_1fr_180px]">
@@ -201,7 +242,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
         </ol>
       </Block>
 
-      <Block index="G" title="Limitations">
+      <Block index="H" title="Limitations">
         <ul className="space-y-2 font-mono text-[12px] text-mute">
           {report.limitations.map((l) => (
             <li key={l} className="flex gap-3">

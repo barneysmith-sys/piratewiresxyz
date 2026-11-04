@@ -6,16 +6,17 @@ Pirate Wires media intelligence. One Next.js application: the Capitol Hill inter
 
 GitHub Pages is not this application's host. The live Pages site, [barneysmith-sys.github.io/piratewiresxyz](https://barneysmith-sys.github.io/piratewiresxyz/), is Jekyll rendering this README from the repository root. Pages never runs Node, never calls the API routes, and never opens PostgreSQL. Do not add a static export to make that URL show a shell of the product.
 
-Deploy on Vercel:
+The demonstration is deployed on Vercel:
 
-1. Import `barneysmith-sys/piratewiresxyz`. Framework preset: Next.js. Node.js 22. Leave the output directory empty so Vercel runs `next start`, not a static file host.
-2. Production branch: `main`, after this branch is merged. Preview deployments can track the pull request.
-3. Set the environment variables below. Then run `npm run db:migrate` once from a machine that can reach `DIRECT_DATABASE_URL`.
-4. For a demonstration on hosted Postgres, set `SEED_ILLUSTRATIVE=true` for one deployment so the fictional corpus is loaded. Analytical mode still ignores it.
+- Project: `piratewiresxyz`
+- Production URL: https://piratewiresxyz.vercel.app
+- Production branch: `cursor/intelligence-foundation-6a5a`
+- Framework preset: Next.js. Node.js 22. Output directory left empty.
+- `DATABASE_URL` stays unset. The deployment serves the 26 bundled illustrative articles from memory. It does not write a database to disk and it does not call an external model. No API key is required.
 
-On Vercel, leave `DATABASE_URL` unset for the demonstration. The app then serves the 26 bundled illustrative articles from memory. It does not write a database to disk and it does not call an external model. No API key is required. Set `DATABASE_URL` only when a hosted Postgres database should replace that fixture. `PW_STORE=pglite` forces the local sandbox even on Vercel. `PW_STORE=memory` forces the bundled fixture locally.
+Do not merge this branch into `main` unless that merge is explicitly approved. `main` is still the README-only repository root, and GitHub Pages publishes from it.
 
-The public production URL follows `main`. This application is on the pull-request branch until that branch is merged or the Vercel production branch is changed. Preview deployments are behind Vercel Authentication.
+Set `DATABASE_URL` only when a hosted Postgres database should replace the fixture. `PW_STORE=pglite` forces the local sandbox even on Vercel. `PW_STORE=memory` forces the bundled fixture locally. For a demonstration on hosted Postgres, set `SEED_ILLUSTRATIVE=true` for one deployment so the fictional corpus is loaded. Analytical mode still ignores it.
 
 Demo mode shows a labelled illustrative corpus. Those records are fictional and are stored with `record_status = illustrative`. Analytical mode reads observed rows only. If none are loaded, the archive and the research report say so. Missing measurements are left blank.
 
@@ -63,6 +64,6 @@ Do not put database credentials in a `NEXT_PUBLIC_` variable. There is no client
 - Real Pirate Wires articles, metric exports, and first-party audience data
 - Ingestion routes for CSV and JSON batches
 - Age-aligned baselines, engagement rate, and distribution reach. Those catalog entries stay specified until the measurements exist
-- Staff authentication before any of this is exposed on a public URL
+- Staff authentication before observed Pirate Wires records are exposed. The public demonstration uses labelled fixtures only.
 
 The original Claude Design handoff is preserved, unmodified, at `design-handoff/claude-piratewires-intelligence/`.

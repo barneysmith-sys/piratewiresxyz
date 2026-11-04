@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Research · Pirate Wires" };
 
 export default function ResearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-black" />}>
+    <Suspense fallback={<div className="min-h-[100dvh] bg-void" />}>
       <ResearchWorkspace />
     </Suspense>
   );

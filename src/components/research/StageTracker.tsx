@@ -65,7 +65,7 @@ export default function StageTracker({ stages, progress }: { stages: Record<Stag
                 disabled={st.status === "queued"}
                 className="flex w-full items-start gap-4 py-3.5 text-left"
               >
-                <span className="relative z-[1] mt-[1px] bg-black">
+                <span className="relative z-[1] mt-[1px] bg-ink-900">
                   <StatusGlyph status={st.status} />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -77,7 +77,7 @@ export default function StageTracker({ stages, progress }: { stages: Record<Stag
                   </span>
                   <span className="mt-1.5 block font-mono text-[11.5px] text-mute">
                     {st.status === "queued" && "Queued"}
-                    {st.status === "running" && <span className="text-[#FF8A8D]">Running · {st.steps.filter((x) => x.status === "done").length}/3 steps</span>}
+                    {st.status === "running" && <span className="text-signal">Running · {st.steps.filter((x) => x.status === "done").length}/3 steps</span>}
                     {st.status === "complete" && (
                       <>
                         {st.summary}

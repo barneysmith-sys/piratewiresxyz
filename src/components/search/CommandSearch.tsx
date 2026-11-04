@@ -175,7 +175,7 @@ export default function CommandSearch({
       {/* input */}
       <div
         className={cx(
-          "group relative flex items-center rounded-[10px] border bg-black/70 backdrop-blur-md transition-[border-color,box-shadow] duration-200 ease-out",
+          "group relative flex items-center rounded-[10px] border bg-ink-950 transition-[border-color,box-shadow] duration-200 ease-out",
           focused ? "border-paper/70 shadow-[0_0_0_4px_rgba(237,235,230,0.05)]" : "border-paper/35 hover:border-paper/60",
           hero ? "h-[60px] px-5 md:h-[72px] md:px-6" : "h-12 px-4"
         )}
@@ -262,7 +262,7 @@ export default function CommandSearch({
           id={`${listId}-list`}
           role="listbox"
           aria-label="Suggested research"
-          className="overflow-hidden rounded-[10px] border border-paper/25 bg-black/75 backdrop-blur-md"
+          className="overflow-hidden rounded-[10px] border border-line bg-ink-900"
         >
           {suggestions.map((s, i) => {
             const isActive = i === active;

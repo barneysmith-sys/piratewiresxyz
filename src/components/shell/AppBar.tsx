@@ -17,7 +17,7 @@ export default function AppBar({ onSearch, visible = true, active }: Props) {
     <div
       inert={!visible}
       className={cx(
-        "fixed inset-x-0 top-0 z-40 border-b border-line bg-black/80 backdrop-blur-md transition-[transform,opacity] duration-500 ease-out",
+        "fixed inset-x-0 top-0 z-40 border-b border-line bg-ink-900 transition-[transform,opacity] duration-500 ease-out",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
       )}
     >

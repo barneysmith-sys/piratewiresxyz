@@ -5,9 +5,8 @@
  * Reads `?q=` and optional `?ids=` so every run is linkable.
  */
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
-import CapitolScene from "@/components/scene/CapitolScene";
 import AppBar from "@/components/shell/AppBar";
 import ArticleDrawer from "@/components/database/ArticleDrawer";
 import type { Article } from "@/lib/data/types";
@@ -24,6 +23,8 @@ export default function ResearchWorkspace() {
   const query = params.get("q") ?? "Analyze AI coverage performance and growth opportunities";
   const idsParam = params.get("ids");
   const datasetMode: DatasetMode = params.get("mode") === "analytical" ? "analytical" : "demo";
+  const lensParam = params.get("lens");
+  const lens = lensParam === "articles" || lensParam === "topics" || lensParam === "audience" ? lensParam : null;
   const req = useMemo(
     () => ({ query, articleIds: idsParam ? idsParam.split(",").filter(Boolean) : undefined, mode: datasetMode }),
     [query, idsParam, datasetMode]
@@ -32,8 +33,6 @@ export default function ResearchWorkspace() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [entered, setEntered] = useState(false);
-  const scroll = useRef(0);
-
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 30);
     return () => clearTimeout(t);
@@ -53,29 +52,23 @@ export default function ResearchWorkspace() {
   const running = STAGES.find((s) => stages[s.id].status === "running");
   const lastSteps = STAGES.flatMap((s) => stages[s.id].steps.map((st) => ({ ...st, stage: s.title }))).slice(-6);
 
-  const go = (q: string, ids?: string[]) => router.push(researchHref(q, ids, datasetMode));
+  const go = (q: string, ids?: string[]) => router.push(researchHref(q, ids, datasetMode, lens));
 
   return (
-    <div className="relative min-h-[100dvh] bg-black">
-      {/* the landscape persists faintly overhead: same world, now a workspace */}
-      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 h-[460px] opacity-60 [mask-image:linear-gradient(to_bottom,black_30%,transparent)]">
-        <CapitolScene progress={scroll} mode="ambient" className="absolute inset-0" />
-      </div>
-      <div aria-hidden className="pw-lattice pointer-events-none fixed inset-0 opacity-60" />
-
+    <div className="relative min-h-[100dvh] bg-void">
       <AppBar onSearch={(q) => go(q)} active="research" />
 
-      {/* entrance wipe (continues the launch transition from the landing page) */}
       <div
         aria-hidden
-        className={`pointer-events-none fixed inset-0 z-30 bg-black transition-opacity duration-700 ease-out ${entered ? "opacity-0" : "opacity-100"}`}
+        className={`pointer-events-none fixed inset-0 z-30 bg-void transition-opacity duration-700 ease-out ${entered ? "opacity-0" : "opacity-100"}`}
       />
 
       <main className="relative z-10 mx-auto max-w-[1440px] px-4 pb-24 pt-32 md:px-8 md:pt-28">
-        <p className="mb-8 border-l-2 border-signal bg-black/70 px-4 py-2.5 font-mono text-[11.5px] leading-relaxed text-paper-dim">
+        <p className="mb-8 border-l-2 border-signal bg-ink-900 px-4 py-2.5 font-mono text-[11.5px] leading-relaxed text-paper-dim">
           {datasetMode === "demo"
             ? "Simulated demo. The five stages read the labelled illustrative corpus. These figures are not Pirate Wires performance, and no external model is called."
             : "Analytical mode. Illustrative records are excluded. Empty measurements stay empty."}
+          {lens ? ` Lens: ${lens}.` : ""}
         </p>
 
         <div className="grid gap-10 lg:grid-cols-[340px_1fr] lg:gap-14">
@@ -85,7 +78,7 @@ export default function ResearchWorkspace() {
               <span className="text-signal">›</span> {query}
             </p>
             {req.articleIds && <p className="mt-2 font-mono text-[11.5px] text-mute">Scoped to {req.articleIds.join(", ")}</p>}
-            <div className="mt-8 border border-line bg-black/80 p-5 backdrop-blur-sm">
+            <div className="mt-8 border border-line bg-ink-900 p-5">
               <StageTracker stages={stages} progress={progress} />
               {(status === "done" || status === "error") && (
                 <button type="button" onClick={retry} className="mt-4 inline-flex items-center gap-2 font-mono text-[11.5px] text-mute hover:text-paper">

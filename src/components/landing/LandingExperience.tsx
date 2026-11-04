@@ -1,29 +1,23 @@
 "use client";
 
 /**
- * One continuous environment:
- *   hero (Capitol scene + search)  →  terrain flattens into a lattice  →  the Intelligence Database.
- *
- * The scene is fixed behind everything and driven by a scroll-progress ref,
- * so scrolling never re-renders React.
+ * Opening screen, then the intelligence database on the same page.
+ * Search hands the query to the research workspace.
  */
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { launchStore } from "@/components/shell/launch";
-import CapitolScene from "@/components/scene/CapitolScene";
 import IntelligenceDatabase from "@/components/database/IntelligenceDatabase";
+import OpeningScreen from "@/components/opening-screen/OpeningScreen";
 import AppBar from "@/components/shell/AppBar";
 import { getArticles } from "@/lib/data/articles";
 import type { Article, ObservedRecord } from "@/lib/data/types";
 import type { DatasetMode } from "@/lib/data/mode";
 import { researchHref } from "@/lib/research/href";
-import Hero from "./Hero";
 import LaunchOverlay from "./LaunchOverlay";
 
 export default function LandingExperience() {
   const router = useRouter();
-  const progress = useRef(0);
-  const sceneRef = useRef<HTMLDivElement>(null);
   const [barVisible, setBarVisible] = useState(false);
   const launchQuery = useSyncExternalStore(launchStore.subscribe, launchStore.get, () => null);
   const [mode, setMode] = useState<DatasetMode>("demo");
@@ -68,11 +62,7 @@ export default function LandingExperience() {
     let raf = 0;
     const update = () => {
       raf = 0;
-      const vh = window.innerHeight;
-      const p = Math.min(1, Math.max(0, window.scrollY / (vh * 1.05)));
-      progress.current = p;
-      if (sceneRef.current) sceneRef.current.style.opacity = String(1 - Math.max(0, (p - 0.75) / 0.25));
-      setBarVisible(window.scrollY > vh * 0.82);
+      setBarVisible(window.scrollY > window.innerHeight * 0.82);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -88,8 +78,8 @@ export default function LandingExperience() {
   }, []);
 
   const startResearch = useCallback(
-    (q: string, ids?: string[]) => {
-      const href = researchHref(q, ids, mode);
+    (q: string, ids?: string[], lens?: string | null) => {
+      const href = researchHref(q, ids, mode, lens);
       router.prefetch(href);
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (!reduced) {
@@ -102,24 +92,13 @@ export default function LandingExperience() {
   );
 
   return (
-    <div className="relative bg-black">
-      <div ref={sceneRef} className="fixed inset-0 z-0 will-change-[opacity]">
-        <CapitolScene progress={progress} className="absolute inset-0" />
-      </div>
-
+    <div className="relative bg-void">
       <AppBar onSearch={(q) => startResearch(q)} visible={barVisible} active="database" />
 
       <div className="relative z-10">
-        <Hero onSubmit={(q) => startResearch(q)} launching={!!launchQuery} nextId="database" marker={mode === "demo" ? "Demo data" : "Observed only"} />
+        <OpeningScreen onSearch={(query, scope) => startResearch(query, undefined, scope)} />
 
-        {/* the hand-off: the land settles into the lattice the app sits on */}
-        <div aria-hidden className="relative h-[38vh]">
-          <div className="pw-lattice absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black)]" />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-black/85" />
-        </div>
-
-        <div id="database" className="relative scroll-mt-16 bg-black/85">
-          <div aria-hidden className="pw-lattice pointer-events-none absolute inset-0 opacity-70" />
+        <div id="database" className="relative scroll-mt-16 border-t border-line bg-void">
           <div className="relative mx-auto max-w-[1440px] px-4 pb-24 pt-10 md:px-8">
             <IntelligenceDatabase
               articles={articles}

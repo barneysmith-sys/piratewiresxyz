@@ -46,7 +46,10 @@ export default function Hero({ onSubmit, launching, nextId, marker }: Props) {
 
       <button
         type="button"
-        onClick={() => document.getElementById(nextId)?.scrollIntoView({ behavior: "smooth" })}
+        onClick={() => {
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          document.getElementById(nextId)?.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+        }}
         className="absolute bottom-6 left-1/2 z-10 grid h-11 w-11 -translate-x-1/2 place-items-center text-paper/80 transition-colors hover:text-paper md:bottom-8"
         aria-label="Scroll to the Intelligence Database"
       >

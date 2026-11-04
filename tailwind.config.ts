@@ -12,6 +12,7 @@ const config: Config = {
         paper: color.paper,
         mute: color.mute,
         signal: color.signal,
+        amber: color.amber,
       },
       fontFamily: {
         display: ["var(--font-display)", "Impact", "sans-serif"],

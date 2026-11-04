@@ -40,21 +40,25 @@ interface Props {
 export default function IntelligenceDatabase({ articles, observed = [], mode = "demo", onMode, loading = false, error = null, onResearch }: Props) {
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState<Topic | "All">("All");
+  const [author, setAuthor] = useState("All");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "publishedAt", dir: -1 });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openId, setOpenId] = useState<string | null>(null);
+
+  const authors = useMemo(() => [...new Set(articles.map((article) => article.author))].sort((a, b) => a.localeCompare(b)), [articles]);
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return articles
       .filter((a) => topic === "All" || a.topic === topic)
+      .filter((a) => author === "All" || a.author === author)
       .filter((a) => !needle || `${a.headline} ${a.author} ${a.url} ${a.topic}`.toLowerCase().includes(needle))
       .sort((a, b) => {
         const va = sortValue(a, sort.key);
         const vb = sortValue(b, sort.key);
         return (va > vb ? 1 : va < vb ? -1 : 0) * sort.dir;
       });
-  }, [articles, q, topic, sort]);
+  }, [articles, q, topic, author, sort]);
 
   const totals = useMemo(() => {
     const views = rows.reduce((s, a) => s + a.metrics.views, 0);
@@ -109,9 +113,9 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
         <dl className="grid grid-cols-3 gap-6 md:gap-10">
           {(mode === "demo"
             ? [
-                ["Articles", fmt.int(rows.length)],
-                ["Views", fmt.compact(totals.views)],
-                ["Avg engaged", fmt.duration(totals.engaged)],
+                ["Illustrative records", fmt.int(rows.length)],
+                ["Fixture views", fmt.compact(totals.views)],
+                ["Fixture engaged", fmt.duration(totals.engaged)],
               ]
             : [
                 ["Observed", fmt.int(observed.length)],
@@ -144,6 +148,21 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
             </button>
           )}
         </label>
+        <label className="flex h-10 items-center">
+          <span className="sr-only">Author</span>
+          <select
+            value={authors.includes(author) || author === "All" ? author : "All"}
+            onChange={(event) => setAuthor(event.target.value)}
+            className="h-full border border-line bg-ink-900 px-3 font-mono text-[12px] text-paper outline-none focus:border-line-strong"
+          >
+            <option value="All">All authors</option>
+            {authors.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
         <div role="group" aria-label="Topic" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0">
           {(["All", ...TOPICS] as const).map((t) => (
             <button
@@ -153,7 +172,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
               onClick={() => setTopic(t)}
               className={cx(
                 "h-9 shrink-0 border px-3 font-mono text-[12px] transition-colors",
-                topic === t ? "border-paper bg-paper text-black" : "border-line text-paper/80 hover:border-line-strong hover:text-paper"
+                topic === t ? "border-signal bg-ink-800 text-paper" : "border-line text-paper/80 hover:border-line-strong hover:text-paper"
               )}
             >
               {t}
@@ -171,7 +190,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
                 className={cx(
                   "h-9 border px-3 font-mono text-[12px]",
                   item === "analytical" && "-ml-px",
-                  mode === item ? "border-paper bg-paper text-black" : "border-line text-paper/80 hover:text-paper"
+                  mode === item ? "border-signal bg-ink-800 text-paper" : "border-line text-paper/80 hover:text-paper"
                 )}
               >
                 {item === "demo" ? "Demo" : "Analytical"}
@@ -328,7 +347,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
                   <td className="whitespace-nowrap px-3 py-3 align-top text-[13px] text-paper-dim">{a.author}</td>
                   <td className="whitespace-nowrap px-3 py-3 align-top font-mono text-[12px] text-paper-dim tabular">{fmt.shortDate(a.publishedAt)}</td>
                   <td className="px-3 py-3 align-top">
-                    <span className={cx("inline-block border px-1.5 py-[1px] font-mono text-[11px]", a.topic === "AI" ? "border-signal/50 text-[#FF8A8D]" : "border-line-strong text-paper/80")}>
+                    <span className="inline-block border border-line-strong px-1.5 py-[1px] font-mono text-[11px] text-paper/80">
                       {a.topic}
                     </span>
                   </td>
@@ -338,7 +357,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
                         <span
                           key={d.channel}
                           style={{ width: `${(d.impressions / totalImp) * 100}%`, opacity: 1 - i * 0.14 }}
-                          className={cx("h-full border-r border-black", i === 0 ? "bg-paper" : "bg-mute")}
+                          className={cx("h-full border-r border-void", i === 0 ? "bg-paper" : "bg-amber/70")}
                         />
                       ))}
                     </div>
@@ -355,7 +374,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
                   <td className="px-3 py-3 text-right align-top font-mono text-[13px] text-paper-dim tabular">{fmt.duration(a.metrics.engagedSec)}</td>
                   <td className="px-3 py-3 text-right align-top font-mono text-[13px] text-paper-dim tabular">{fmt.pct(a.metrics.completion)}</td>
                   <td className="px-3 py-2.5 align-top">
-                    <Sparkline values={a.trend} focus={a.topic === "AI"} />
+                    <Sparkline values={a.trend} />
                   </td>
                 </tr>
               );
@@ -363,7 +382,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
             {rows.length === 0 && (
               <tr>
                 <td colSpan={10} className="px-3 py-16 text-center font-mono text-[13px] text-mute">
-                  No articles match. <button className="text-paper underline underline-offset-4" onClick={() => { setQ(""); setTopic("All"); }}>Reset filters</button>
+                  No articles match. <button className="text-paper underline underline-offset-4" onClick={() => { setQ(""); setTopic("All"); setAuthor("All"); }}>Reset filters</button>
                 </td>
               </tr>
             )}

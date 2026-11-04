@@ -243,9 +243,24 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
     summary: `${defaulted ? `No topic named, so scope defaulted to ${label}. ` : ""}${focus.length} articles analysed. ${findings[0].body} ${opp ? `The clearest growth lever is ${opp.channel}.` : ""}`,
     kpis: [
       { label: "Articles in scope", value: fmt.int(focus.length), note: `of ${all.length}` },
-      { label: "Avg views", value: fmt.compact(fv), delta: fmt.signedPct(lift), deltaTone: lift > 0.02 ? "up" : lift < -0.02 ? "down" : "flat" },
-      { label: "Avg engaged", value: fmt.duration(fe), delta: fmt.signedPct(re ? fe / re - 1 : 0), deltaTone: fe >= re ? "up" : "down" },
-      { label: "Subs / 1k views", value: fConv.toFixed(1), delta: fmt.signedPct(rConv ? fConv / rConv - 1 : 0), deltaTone: fConv >= rConv ? "up" : "down" },
+      {
+        label: provenance === "simulated" ? "Avg fixture views" : "Avg views",
+        value: fmt.compact(fv),
+        delta: fmt.signedPct(lift),
+        deltaTone: lift > 0.02 ? "up" : lift < -0.02 ? "down" : "flat",
+      },
+      {
+        label: provenance === "simulated" ? "Avg fixture engaged" : "Avg engaged",
+        value: fmt.duration(fe),
+        delta: fmt.signedPct(re ? fe / re - 1 : 0),
+        deltaTone: fe >= re ? "up" : "down",
+      },
+      {
+        label: provenance === "simulated" ? "Fixture subs / 1k" : "Subs / 1k views",
+        value: fConv.toFixed(1),
+        delta: fmt.signedPct(rConv ? fConv / rConv - 1 : 0),
+        deltaTone: fConv >= rConv ? "up" : "down",
+      },
     ],
     topics,
     weekly,

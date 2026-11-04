@@ -5,7 +5,7 @@ export function DemoBadge({ children = "Demo data", className }: { children?: Re
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1.5 border border-signal/40 bg-signal/[0.07] px-2 py-[3px] font-mono text-2xs uppercase text-[#FF8A8D]",
+        "inline-flex items-center gap-1.5 border border-signal/50 bg-ink-900 px-2 py-[3px] font-mono text-2xs uppercase text-paper",
         className
       )}
     >
@@ -68,9 +68,9 @@ export function Sparkline({
   const d = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className={className} role="img" aria-label="14-day views trend">
-      <path d={`${d}L${width},${height}L0,${height}Z`} fill={focus ? "rgba(227,38,43,0.14)" : "rgba(237,235,230,0.07)"} />
-      <path d={d} fill="none" stroke={focus ? "#E3262B" : "#EDEBE6"} strokeWidth="1.2" strokeLinejoin="round" />
-      <rect x={pts[0][0]} y={pts[0][1] - 1.5} width="3" height="3" fill={focus ? "#E3262B" : "#EDEBE6"} />
+      <path d={`${d}L${width},${height}L0,${height}Z`} fill={focus ? "rgba(227,27,43,0.16)" : "rgba(217,164,91,0.12)"} />
+      <path d={d} fill="none" stroke={focus ? "#E31B2B" : "#D9A45B"} strokeWidth="1.2" strokeLinejoin="round" />
+      <rect x={pts[0][0]} y={pts[0][1] - 1.5} width="3" height="3" fill={focus ? "#E31B2B" : "#D9A45B"} />
     </svg>
   );
 }

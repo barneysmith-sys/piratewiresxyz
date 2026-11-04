@@ -6,12 +6,12 @@
  */
 import { useMemo, useState } from "react";
 import { Area, Bar, BarChart, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
-import { series } from "@/lib/design/tokens";
+import { color, series } from "@/lib/design/tokens";
 import { cx, fmt } from "@/lib/format";
 import type { Article } from "@/lib/data/types";
 import type { ChannelRow, TopicRow } from "@/lib/research/types";
 
-const axisTick = { fill: "#8C8C89", fontSize: 10.5, fontFamily: "var(--font-mono)" };
+const axisTick = { fill: color.mute.DEFAULT, fontSize: 10.5, fontFamily: "var(--font-mono)" };
 
 export function ChartTooltip({
   active,
@@ -26,7 +26,7 @@ export function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border border-line-strong bg-black/95 px-3 py-2 font-mono text-[11px] shadow-xl">
+    <div className="border border-line bg-ink-900 px-3 py-2 font-mono text-[11px]">
       {label && <p className="mb-1 text-mute">{label}</p>}
       {payload.map((p) => (
         <p key={p.name} className="flex items-center gap-2 text-paper">
@@ -60,7 +60,7 @@ export function TopicComparison({ rows, focus }: { rows: TopicRow[]; focus: stri
             role="tab"
             aria-selected={metric === x.key}
             onClick={() => setMetric(x.key)}
-            className={cx("h-8 border px-2.5 font-mono text-[11.5px]", metric === x.key ? "border-paper text-paper" : "border-line text-mute hover:text-paper")}
+            className={cx("h-8 border px-2.5 font-mono text-[11.5px]", metric === x.key ? "border-signal text-paper" : "border-line text-mute hover:text-paper")}
           >
             {x.label}
           </button>
@@ -71,11 +71,11 @@ export function TopicComparison({ rows, focus }: { rows: TopicRow[]; focus: stri
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }} barCategoryGap={7}>
             <CartesianGrid horizontal={false} stroke={series.grid} />
             <XAxis type="number" tick={axisTick} tickFormatter={m.f} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="topic" tick={{ ...axisTick, fill: "#C9C7C1" }} width={88} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="topic" tick={{ ...axisTick, fill: color.paper.dim }} width={88} axisLine={false} tickLine={false} />
             <Tooltip content={<ChartTooltip format={m.f} />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
             <Bar dataKey={metric} name={m.label} isAnimationActive>
               {data.map((d) => (
-                <Cell key={d.topic} fill={d.topic === focus ? series.focus : "rgba(237,235,230,0.55)"} />
+                <Cell key={d.topic} fill={d.topic === focus ? series.focus : series.secondary} />
               ))}
             </Bar>
           </BarChart>
@@ -131,7 +131,7 @@ export function ChannelBars({ rows }: { rows: ChannelRow[] }) {
                   <span className="text-paper tabular">{fmt.pct(r.focusCtr, 1)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="h-[5px] bg-paper/35" style={{ width: `${(r.baseCtr / max) * 100}%` }} />
+                  <span className="h-[5px] bg-amber/80" style={{ width: `${(r.baseCtr / max) * 100}%` }} />
                   <span className="text-mute tabular">{fmt.pct(r.baseCtr, 1)}</span>
                 </div>
               </div>
@@ -177,7 +177,7 @@ export function DistributionNetwork({ channels, articles, scopeLabel }: { channe
             const c = chNodes.find((n) => n.channel === d.channel);
             if (!c) return null;
             const on = !hover || hover === c.channel;
-            return <line key={art.id + d.channel} x1={x} y1={y} x2={c.x} y2={c.y} stroke={on ? "rgba(237,235,230,0.35)" : "rgba(237,235,230,0.06)"} strokeWidth={0.8} />;
+            return <line key={art.id + d.channel} x1={x} y1={y} x2={c.x} y2={c.y} stroke={on ? "rgba(217,164,91,0.45)" : "rgba(217,164,91,0.08)"} strokeWidth={0.8} />;
           })
         )}
         {/* scope ↔ channel */}
@@ -188,15 +188,15 @@ export function DistributionNetwork({ channels, articles, scopeLabel }: { channe
             y1={cy0}
             x2={c.x}
             y2={c.y}
-            stroke={!hover || hover === c.channel ? "rgba(227,38,43,0.65)" : "rgba(227,38,43,0.12)"}
+            stroke={!hover || hover === c.channel ? "rgba(227,27,43,0.7)" : "rgba(227,27,43,0.14)"}
             strokeWidth={0.6 + (c.focusImpressions / maxImp) * 3}
           />
         ))}
         {/* articles */}
         {arts.map(({ art, x, y }) => (
           <g key={art.id}>
-            <rect x={x - 3} y={y - 3} width={6} height={6} fill="none" stroke="rgba(237,235,230,0.8)" strokeWidth={1} />
-            <text x={x + (x > cx0 ? 8 : -8)} y={y + 3.5} textAnchor={x > cx0 ? "start" : "end"} fill="#8C8C89" fontSize="9.5" fontFamily="var(--font-mono)">
+            <rect x={x - 3} y={y - 3} width={6} height={6} fill="none" stroke={color.paper.DEFAULT} strokeWidth={1} />
+            <text x={x + (x > cx0 ? 8 : -8)} y={y + 3.5} textAnchor={x > cx0 ? "start" : "end"} fill={color.mute.DEFAULT} fontSize="9.5" fontFamily="var(--font-mono)">
               {art.id}
             </text>
           </g>
@@ -216,13 +216,13 @@ export function DistributionNetwork({ channels, articles, scopeLabel }: { channe
               onBlur={() => setHover(null)}
               className="cursor-pointer outline-none"
             >
-              <rect x={c.x - c.r} y={c.y - c.r} width={c.r * 2} height={c.r * 2} fill="#000" stroke={above ? "#E3262B" : "rgba(237,235,230,0.7)"} strokeWidth={1.2} />
-              <rect x={c.x - c.r * 0.45} y={c.y - c.r * 0.45} width={c.r * 0.9} height={c.r * 0.9} fill={above ? "#E3262B" : "#EDEBE6"} opacity={0.9} />
+              <rect x={c.x - c.r} y={c.y - c.r} width={c.r * 2} height={c.r * 2} fill={color.ink[900]} stroke={above ? color.signal.DEFAULT : color.amber} strokeWidth={1.2} />
+              <rect x={c.x - c.r * 0.45} y={c.y - c.r * 0.45} width={c.r * 0.9} height={c.r * 0.9} fill={above ? color.signal.DEFAULT : color.amber} opacity={0.9} />
               <text
                 x={c.x}
                 y={c.y + (Math.sin(c.a) >= 0 ? c.r + 14 : -c.r - 7)}
                 textAnchor="middle"
-                fill={hover === c.channel ? "#EDEBE6" : "#C9C7C1"}
+                fill={hover === c.channel ? color.paper.DEFAULT : color.paper.dim}
                 fontSize="11"
                 fontFamily="var(--font-mono)"
               >
@@ -232,8 +232,8 @@ export function DistributionNetwork({ channels, articles, scopeLabel }: { channe
           );
         })}
         {/* scope */}
-        <rect x={cx0 - 10} y={cy0 - 10} width={20} height={20} fill="#E3262B" />
-        <text x={cx0} y={cy0 + 30} textAnchor="middle" fill="#EDEBE6" fontSize="11" fontFamily="var(--font-mono)">
+        <rect x={cx0 - 10} y={cy0 - 10} width={20} height={20} fill={color.signal.DEFAULT} />
+        <text x={cx0} y={cy0 + 30} textAnchor="middle" fill={color.paper.DEFAULT} fontSize="11" fontFamily="var(--font-mono)">
           {scopeLabel.toUpperCase()}
         </text>
       </svg>
@@ -245,7 +245,7 @@ export function DistributionNetwork({ channels, articles, scopeLabel }: { channe
         ) : (
           <>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 bg-signal" /> CTR above other topics</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 bg-paper" /> At or below</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 bg-amber" /> At or below</span>
             <span>Node size = impressions · hover a channel</span>
           </>
         )}

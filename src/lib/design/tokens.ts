@@ -1,52 +1,50 @@
 /**
  * PIRATE WIRES / INTELLIGENCE — design tokens
  *
- * Single source of truth for colour, type and motion. Consumed by:
- *  - tailwind.config.ts      (utility classes)
- *  - the Three.js scene       (particle + node colours)
- *  - Recharts / SVG charts    (series colours)
- *
- * Keep the palette restrained: black, charcoal, off-white, grey, one red.
+ * Midnight navy ground, warm ivory type, one red for the active signal,
+ * amber for a secondary comparison. The opening screen keeps its own dusk
+ * palette so the pixel city stays atmospheric.
  */
 
 export const color = {
-  void: "#000000", // page ground, hero
+  void: "#080D1B",
   ink: {
-    950: "#050505", // app ground below the hero
-    900: "#0A0A0B", // panels
-    850: "#0F0F10", // raised panels / table header
-    800: "#151517", // hover rows, inputs
-    700: "#1E1E21", // pressed
+    950: "#080D1B",
+    900: "#10182A",
+    850: "#17213A",
+    800: "#202B40",
+    700: "#2A3650",
   },
   line: {
-    faint: "rgba(255,255,255,0.06)",
-    DEFAULT: "rgba(255,255,255,0.11)",
-    strong: "rgba(255,255,255,0.22)",
-    bright: "rgba(255,255,255,0.55)",
+    faint: "rgba(48,59,80,0.72)",
+    DEFAULT: "#303B50",
+    strong: "#46526A",
+    bright: "rgba(243,240,233,0.55)",
   },
   paper: {
-    DEFAULT: "#EDEBE6", // primary text, particles
-    dim: "#C9C7C1", // secondary text
+    DEFAULT: "#F3F0E9",
+    dim: "#C5CDDA",
   },
   mute: {
-    DEFAULT: "#8C8C89", // labels (6.4:1 on #000)
-    deep: "#5F5F5C", // decorative only, never for text that must be read
+    DEFAULT: "#A3AEC0",
+    deep: "#6E7A90",
   },
   signal: {
-    DEFAULT: "#E3262B", // the one accent
-    hot: "#FF3B3F", // glows / active nodes
-    dim: "#7A1518", // red on dark fills
-    wash: "rgba(227,38,43,0.10)",
+    DEFAULT: "#E31B2B",
+    hot: "#E31B2B",
+    dim: "#7A1822",
+    wash: "rgba(227,27,43,0.12)",
   },
+  amber: "#D9A45B",
 } as const;
 
-/** Ordered chart series. Red is reserved for "the thing being asked about". */
+/** Red is the subject under study. Amber is the comparison. */
 export const series = {
   focus: color.signal.DEFAULT,
   base: color.paper.DEFAULT,
-  secondary: "#9B9B97",
-  tertiary: "#5F5F5C",
-  grid: "rgba(255,255,255,0.07)",
+  secondary: color.amber,
+  tertiary: color.mute.DEFAULT,
+  grid: "rgba(48,59,80,0.95)",
 } as const;
 
 export const font = {
@@ -63,5 +61,5 @@ export const motion = {
   duration: { fast: 140, base: 240, slow: 520, cinematic: 1100 },
 } as const;
 
-/** Washington, D.C. — the U.S. Capitol. Used by the HUD coordinate readouts. */
+/** Washington, D.C. — the U.S. Capitol. Used by the opening-screen readout. */
 export const capitolCoords = { lat: 38.8899, lon: -77.0091 } as const;
