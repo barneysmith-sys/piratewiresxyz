@@ -6,6 +6,7 @@
  * backend can reuse the same shapes with richer sources.
  */
 import { fmt } from "@/lib/format";
+import { searchTokens } from "@/lib/data/search";
 import { CHANNELS, TOPICS, type Article, type Topic } from "@/lib/data/types";
 import type { ChannelRow, Finding, Recommendation, ResearchReport, ResearchRequest, TopicRow } from "./types";
 
@@ -27,6 +28,22 @@ export function resolveScope(req: ResearchRequest, all: Article[]) {
     return { defaulted: false, focus, rest: all.filter((a) => !set.has(a.id)), topic: null as Topic | null, label: `${focus.length} selected article${focus.length > 1 ? "s" : ""}` };
   }
   const detected = detectTopic(req.query);
+  const tokens = searchTokens(req.query);
+  const hits =
+    tokens.length === 0
+      ? []
+      : all.filter((article) => tokens.every((token) => `${article.headline} ${article.author}`.toLowerCase().includes(token)));
+  // A headline or byline query should not fall through to a whole topic.
+  if (!detected && hits.length > 0) {
+    const ids = new Set(hits.map((article) => article.id));
+    return {
+      defaulted: false,
+      focus: hits,
+      rest: all.filter((article) => !ids.has(article.id)),
+      topic: null,
+      label: hits.length === 1 ? hits[0].headline : `${hits.length} matching articles`,
+    };
+  }
   const topic = detected ?? "AI";
   return {
     focus: all.filter((a) => a.topic === topic),
@@ -158,18 +175,26 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
 
   const findings: Finding[] = [
     {
+      id: "F0",
+      stage: "discovery",
+      title: "Verified publication sample",
+      body: `${focus.length} of ${all.length} loaded articles are published Pirate Wires pieces. Headlines, bylines, dates and URLs come from the public archive. Topic labels are editorial classifications of those pieces. Every view, engagement and conversion figure below is illustrative.`,
+      confidence: "High",
+      evidence: focus.slice(0, 3).map((a) => ev(a, "published", a.publishedAt)),
+    },
+    {
       id: "F1",
       stage: "performance",
-      title: `${label[0].toUpperCase() + label.slice(1)} ${lift >= 0 ? "outperforms" : "trails"} the rest of the archive on reach`,
-      body: `Average views per article are ${fmt.compact(fv)} against ${fmt.compact(rv)} elsewhere (${fmt.signedPct(lift)}). Engaged time is ${fmt.duration(fe)} vs ${fmt.duration(re)}.`,
-      confidence: focus.length >= 6 ? "High" : "Medium",
-      evidence: top.map((t) => ev(t.a, "views", fmt.compact(t.a.metrics.views))),
+      title: `Illustrative: ${label} ${lift >= 0 ? "outranks" : "trails"} the rest of the sample on fixture reach`,
+      body: `Using synthetic figures only, average fixture views are ${fmt.compact(fv)} against ${fmt.compact(rv)} elsewhere (${fmt.signedPct(lift)}). Fixture engaged time is ${fmt.duration(fe)} vs ${fmt.duration(re)}. This is not measured Pirate Wires traffic.`,
+      confidence: focus.length >= 6 ? "Medium" : "Low",
+      evidence: top.map((t) => ev(t.a, "fixture views", fmt.compact(t.a.metrics.views))),
     },
     {
       id: "F2",
       stage: "performance",
-      title: `Conversion runs at ${fConv.toFixed(1)} subscriptions per 1k views`,
-      body: `Compared with ${rConv.toFixed(1)} for other coverage. The strongest converters combine above-median read-through with a clear explanatory frame.`,
+      title: `Illustrative conversion runs at ${fConv.toFixed(1)} subscriptions per 1k fixture views`,
+      body: `Compared with ${rConv.toFixed(1)} for other coverage in the same synthetic dataset. Subscription counts were not supplied by Pirate Wires.`,
       confidence: "Medium",
       evidence: [...focus]
         .sort((a, b) => b.metrics.subsGained / b.metrics.views - a.metrics.subsGained / a.metrics.views)
@@ -179,10 +204,10 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
     {
       id: "F3",
       stage: "distribution",
-      title: `${lead?.channel ?? "Newsletter"} carries the volume; ${opp?.channel ?? "Hacker News"} converts attention best`,
+      title: `Illustrative: ${lead?.channel ?? "Newsletter"} carries the fixture volume; ${opp?.channel ?? "Hacker News"} converts that fixture best`,
       body: opp
-        ? `${opp.channel} delivers a ${fmt.pct(opp.focusCtr, 1)} click-through on this coverage (vs ${fmt.pct(opp.baseCtr, 1)} for other topics) from only ${opp.focusPosts} posts.`
-        : "No secondary channel stands out on click-through in this scope.",
+        ? `In the synthetic distribution, ${opp.channel} delivers a ${fmt.pct(opp.focusCtr, 1)} click-through on this coverage (vs ${fmt.pct(opp.baseCtr, 1)} for other topics) from only ${opp.focusPosts} posts. No platform links were collected.`
+        : "No secondary channel stands out on click-through in this illustrative scope.",
       confidence: "Medium",
       evidence: opp
         ? focus
@@ -196,8 +221,8 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
     {
       id: "F4",
       stage: "audience",
-      title: `Readers stay longer: ${fmt.pct(fc)} read-through`,
-      body: `Read-through is ${fmt.pct(fc)} against ${fmt.pct(rc)} across other topics, and ${fmt.pct(fTail)} of 14-day traffic arrives after day three (vs ${fmt.pct(rTail)}), a sign of search and referral pull beyond launch day.`,
+      title: `Illustrative read-through is ${fmt.pct(fc)}`,
+      body: `Fixture read-through is ${fmt.pct(fc)} against ${fmt.pct(rc)} across other topics, and ${fmt.pct(fTail)} of the synthetic 14-day series arrives after day three (vs ${fmt.pct(rTail)}). There is no first-party audience measurement behind this.`,
       confidence: "Low",
       evidence: longest ? [ev(longest, "post-day-3 share", fmt.pct(tail(longest)))] : [],
     },
@@ -206,26 +231,26 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
   const recommendations: Recommendation[] = [
     {
       id: "R1",
-      title: opp ? `Build a native ${opp.channel} playbook` : "Test a third distribution channel",
+      title: opp ? `Hypothesis: test a native ${opp.channel} playbook` : "Hypothesis: test a third distribution channel",
       body: opp
-        ? `Post every qualifying piece to ${opp.channel} with a technical framing in the first line. Current cadence is low relative to its click-through, so volume is the lever.`
-        : "Pick one channel and run a four-week posting test with a fixed cadence.",
+        ? `Hypothesis only, because channel performance here is synthetic. If first-party distribution data later shows the same gap, post qualifying pieces to ${opp.channel} with a specific first line and compare click-through against the newsletter.`
+        : "Pick one channel and run a four-week posting test once real distribution data exists.",
       impact: "High",
       effort: "Low",
       basis: ["F3"],
     },
     {
       id: "R2",
-      title: "Turn top performers into a series",
-      body: `The highest-scoring pieces (${top.map((t) => t.a.id).join(", ")}) share a format: explanatory, high read-through. Commission follow-ups and link them as a running series to compound the long tail.`,
+      title: "Hypothesis: turn the strongest verified pieces into a series",
+      body: `On illustrative scores, the leading pieces are ${top.map((t) => t.a.headline).join("; ")} (${top.map((t) => t.a.id).join(", ")}). That ranking is not audience data. A useful next step is to read those published pieces and commission follow-ups only where the reporting itself supports a series.`,
       impact: "High",
       effort: "Medium",
       basis: ["F1", "F4"],
     },
     {
       id: "R3",
-      title: "Put the subscribe moment where attention peaks",
-      body: `Conversion is ${fConv >= rConv ? "already ahead" : "behind"} of the archive. Test an inline subscribe module at the 60% scroll mark on pieces with above-median read-through.`,
+      title: "Hypothesis: test the subscribe moment against real read-through",
+      body: `The illustrative conversion rate is ${fConv >= rConv ? "ahead of" : "behind"} the rest of this sample. Do not treat that as newsletter performance. Once read-through is measured, test an inline subscribe module on pieces that actually hold readers.`,
       impact: "Medium",
       effort: "Low",
       basis: ["F2", "F4"],
@@ -239,8 +264,8 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
     scopeLabel: label,
     focusTopic: topic,
     articleIds: focus.map((a) => a.id),
-    headline: `${label[0].toUpperCase() + label.slice(1)}: ${lift >= 0 ? fmt.signedPct(lift) + " reach vs archive" : fmt.signedPct(lift) + " reach vs archive"}`,
-    summary: `${defaulted ? `No topic named, so scope defaulted to ${label}. ` : ""}${focus.length} articles analysed. ${findings[0].body} ${opp ? `The clearest growth lever is ${opp.channel}.` : ""}`,
+    headline: `${label[0].toUpperCase() + label.slice(1)}: ${fmt.signedPct(lift)} ${provenance === "simulated" ? "illustrative reach vs archive" : "reach vs archive"}`,
+    summary: `${defaulted ? `No topic named, so scope defaulted to ${label}. ` : ""}${focus.length} articles analysed. ${findings[0].body}${opp ? ` The clearest illustrative distribution gap is ${opp.channel}.` : ""}`,
     kpis: [
       { label: "Articles in scope", value: fmt.int(focus.length), note: `of ${all.length}` },
       {
@@ -272,7 +297,7 @@ export function buildReport(req: ResearchRequest, all: Article[], provenance: "s
       ...(defaulted ? [`The query named no topic, so scope defaulted to ${label}. Name a topic or select articles to change it.`] : []),
       provenance === "live"
         ? "Computed from observed records only. Measurements that were not stored are omitted, not treated as zero."
-        : "Computed from labelled illustrative records. These figures are not Pirate Wires performance.",
+        : "Headlines, bylines, dates and URLs are verified publication metadata. Views, engaged time, read-through, distribution and subscriptions are illustrative. These figures are not Pirate Wires performance.",
       "Audience intelligence uses engagement proxies; no reader-level or demographic data is connected.",
       "Correlational: channel and topic effects are not causally isolated.",
     ],

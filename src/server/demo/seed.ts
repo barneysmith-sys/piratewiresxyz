@@ -51,11 +51,11 @@ export async function seedIllustrativeCorpus(session: SqlSession): Promise<{ see
           source_key, name, collection_method, permissions, validation_status, notes, original_identifier
         ) values (
           $1,
-          'Illustrative sandbox corpus',
+          'Pirate Wires',
           'illustrative_fixture',
-          'Generated inside this repository to demonstrate the interface. Not a Pirate Wires export.',
+          'Publication metadata from the public Pirate Wires archive. Performance snapshots on these rows are illustrative.',
           'illustrative',
-          'Fictional headlines, authors, URLs and metrics. Excluded from every analytical view.',
+          'Verified headlines, bylines, dates and URLs. Illustrative metrics are excluded from every analytical view.',
           'claude-design-corpus-seed-4242'
         )
         returning id::text as id
@@ -121,7 +121,7 @@ export async function seedIllustrativeCorpus(session: SqlSession): Promise<{ see
           source.id,
           `${article.publishedAt}T12:00:00Z`,
           categories.get(article.topic),
-          "Illustrative fixture for the interface. Not a Pirate Wires article.",
+          article.excerpt ?? "Published Pirate Wires article. Performance figures stored with this row are illustrative.",
         ],
       );
 
@@ -150,12 +150,15 @@ export async function seedIllustrativeCorpus(session: SqlSession): Promise<{ see
       const raw = {
         fixture: "claude-design-corpus",
         publicId: article.id,
+        publicationVerified: article.publicationVerified === true,
+        verificationStatus: article.verificationStatus ?? null,
+        category: article.category ?? null,
         readMinutes: article.readMinutes,
         engagedSec: article.metrics.engagedSec,
         completion: article.metrics.completion,
         trend: article.trend,
         distribution: article.distribution,
-        note: "Fictional measurements for the interface. Not observed Pirate Wires performance.",
+        note: "Illustrative measurements for the interface. Not observed Pirate Wires performance.",
       };
       await session.query(
         `

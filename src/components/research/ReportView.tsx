@@ -148,7 +148,7 @@ export default function ReportView({ report, articles, onOpenArticle }: Props) {
       <Block index="D" title="Author comparison">
         <p className="mb-4 max-w-[68ch] font-mono text-[12px] text-mute">
           {report.provenance === "simulated"
-            ? "Authors inside this illustrative scope. Counts and fixture views are not a ranking of Pirate Wires writers."
+            ? "Bylines are from the publication. Article counts are from this verified sample. Fixture views are illustrative and are not a ranking of Pirate Wires writers."
             : "Primary authors on the observed articles in this scope. Frequency is not an engagement ranking."}
         </p>
         <AuthorComparison articles={scoped} illustrative={report.provenance === "simulated"} />

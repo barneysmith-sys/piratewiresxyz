@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { DemoBadge, Sparkline } from "@/components/ui/primitives";
 import { cx, fmt } from "@/lib/format";
 import type { DatasetMode } from "@/lib/data/mode";
+import { recordMatchesQuery } from "@/lib/data/search";
 import { TOPICS, type Article, type ObservedRecord, type Topic } from "@/lib/data/types";
 import ArticleDrawer from "./ArticleDrawer";
 
@@ -48,11 +49,10 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
   const authors = useMemo(() => [...new Set(articles.map((article) => article.author))].sort((a, b) => a.localeCompare(b)), [articles]);
 
   const rows = useMemo(() => {
-    const needle = q.trim().toLowerCase();
     return articles
       .filter((a) => topic === "All" || a.topic === topic)
       .filter((a) => author === "All" || a.author === author)
-      .filter((a) => !needle || `${a.headline} ${a.author} ${a.url} ${a.topic}`.toLowerCase().includes(needle))
+      .filter((a) => recordMatchesQuery(a, q))
       .sort((a, b) => {
         const va = sortValue(a, sort.key);
         const vb = sortValue(b, sort.key);
@@ -236,7 +236,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
           <p className="pw-label">{mode === "demo" ? "Illustrative corpus" : "Analytical archive"}</p>
           <p className="mt-4 max-w-[68ch] font-mono text-[13px] leading-relaxed text-paper-dim">
             {mode === "demo"
-              ? "The illustrative corpus did not load. Demo records are fictional and never enter analytical totals."
+              ? "The demo corpus did not load. Illustrative performance figures never enter analytical totals."
               : "No observed articles are stored. Illustrative records stay in demo mode and are excluded here. Missing measurements are not shown as zero."}
           </p>
         </div>
@@ -301,13 +301,13 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
                 Distribution
               </th>
               <Th k="views" className="text-right">
-                Views
+                {mode === "demo" ? "Fixture views" : "Views"}
               </Th>
               <Th k="engagedSec" className="text-right">
-                Engaged
+                {mode === "demo" ? "Fixture engaged" : "Engaged"}
               </Th>
               <Th k="completion" className="text-right">
-                Read-through
+                {mode === "demo" ? "Fixture read-through" : "Read-through"}
               </Th>
               <th scope="col" className="pw-label px-3 font-normal">
                 14-day trend
@@ -390,7 +390,7 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
         </table>
         <p className="mt-4 font-mono text-[11.5px] text-mute">
           {mode === "demo"
-            ? "Illustrative records for the interface. Headlines, authors, URLs and metrics are fictional and do not describe real articles."
+            ? "Headlines, bylines, dates and URLs are from the public Pirate Wires archive. Views, engaged time, read-through and distribution are illustrative and are not Pirate Wires performance."
             : "Observed records only."}
         </p>
       </div>}

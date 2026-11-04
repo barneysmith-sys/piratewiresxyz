@@ -1,4 +1,5 @@
 import { CHANNELS, TOPICS, type Article, type Channel, type ObservedRecord, type Topic } from "@/lib/data/types";
+import { searchTokens } from "@/lib/data/search";
 import type { DatasetMode } from "@/lib/data/mode";
 import type { SqlSession } from "@/server/db/migrate";
 
@@ -12,6 +13,9 @@ export type ArticleList = {
 
 type FixtureRaw = {
   publicId?: string;
+  publicationVerified?: boolean;
+  verificationStatus?: Article["verificationStatus"];
+  category?: string | null;
   readMinutes?: number;
   engagedSec?: number;
   completion?: number;
@@ -62,8 +66,9 @@ function isChannel(value: string | undefined): value is Channel {
   return value != null && (CHANNELS as readonly string[]).includes(value);
 }
 
-function likePattern(query: string): string {
-  return `%${query.replace(/[\\%_]/g, "\\$&")}%`;
+function likePattern(query: string): string[] | null {
+  const tokens = searchTokens(query);
+  return tokens.length > 0 ? tokens : null;
 }
 
 export async function listArticles(
@@ -128,10 +133,16 @@ export async function listArticles(
       ) aud on true
       where a.record_status = $1
         and (
-          $3::text is null
-          or a.headline ilike $3 escape '\\'
-          or a.canonical_url ilike $3 escape '\\'
-          or author.name ilike $3 escape '\\'
+          $3::text[] is null
+          or not exists (
+            select 1
+            from unnest($3::text[]) as tok
+            where a.headline not ilike ('%' || tok || '%')
+              and coalesce(author.name, '') not ilike ('%' || tok || '%')
+              and a.canonical_url not ilike ('%' || tok || '%')
+              and coalesce(topic.topic_name, '') not ilike ('%' || tok || '%')
+              and coalesce(a.excerpt, '') not ilike ('%' || tok || '%')
+          )
         )
         and ($4::text is null or topic.topic_name = $4)
         and (
@@ -222,6 +233,9 @@ export async function listArticles(
       distribution,
       trend: trend.slice(0, 14),
       demo: row.record_status === "illustrative",
+      publicationVerified: raw.publicationVerified === true,
+      verificationStatus: raw.verificationStatus,
+      category: raw.category ?? null,
       sourceName: row.source_name,
       excerpt: row.excerpt,
     });

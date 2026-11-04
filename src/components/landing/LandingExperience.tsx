@@ -10,7 +10,6 @@ import { launchStore } from "@/components/shell/launch";
 import IntelligenceDatabase from "@/components/database/IntelligenceDatabase";
 import OpeningScreen from "@/components/opening-screen/OpeningScreen";
 import AppBar from "@/components/shell/AppBar";
-import { getArticles } from "@/lib/data/articles";
 import type { Article, ObservedRecord } from "@/lib/data/types";
 import type { DatasetMode } from "@/lib/data/mode";
 import { researchHref } from "@/lib/research/href";
@@ -43,13 +42,6 @@ export default function LandingExperience() {
       })
       .catch((error: unknown) => {
         if ((error as Error).name === "AbortError") return;
-        if (mode === "demo") {
-          setArticles(getArticles());
-          setObserved([]);
-          setArchiveError(null);
-          setLoadingArchive(false);
-          return;
-        }
         setArchiveError((error as Error).message);
         setArticles([]);
         setObserved([]);

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { startAmbient } from "./ambient";
 import "./opening-screen.css";
 
 const PHRASES = [
   "Ask the archive anything...",
   "Analyze AI coverage performance...",
-  "Where does technology policy travel...",
-  "Which ideas keep their audience...",
+  "Discover emerging editorial opportunities...",
+  "Identify audience growth opportunities...",
 ];
 
 type Scope = "articles" | "topics" | "audience" | null;
@@ -36,6 +37,7 @@ export default function OpeningScreen({ onSearch, backgroundSrc = "/pwi/dc-dusk.
   const [time, setTime] = useState("--:--:--");
 
   const sentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lights = useRef<HTMLCanvasElement | null>(null);
   const typingApi = useRef<{ start: (delay: number) => void; stop: () => void }>({
     start: () => undefined,
     stop: () => undefined,
@@ -99,6 +101,12 @@ export default function OpeningScreen({ onSearch, backgroundSrc = "/pwi/dc-dusk.
     };
   }, []);
 
+  useEffect(() => {
+    const canvas = lights.current;
+    if (!canvas || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    return startAmbient(canvas);
+  }, []);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const next = query.trim();
@@ -119,9 +127,11 @@ export default function OpeningScreen({ onSearch, backgroundSrc = "/pwi/dc-dusk.
         <div className="pw-drift">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="pw-bg" src={backgroundSrc} alt="" draggable={false} fetchPriority="high" />
+          <canvas ref={lights} className="pw-lights" />
           <div className="pw-haze" />
           <div className="pw-glow pw-glow-capitol" />
           <div className="pw-glow pw-glow-drum" />
+          <div className="pw-glow pw-glow-halo" />
           <div className="pw-glow pw-glow-lamp" />
         </div>
       </div>

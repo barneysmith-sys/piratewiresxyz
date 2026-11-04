@@ -22,8 +22,22 @@ describe("bundled demo", () => {
     const ai = listBundledArticles({ mode: "demo", topic: "AI" });
     expect(ai.articles.length).toBeGreaterThan(0);
     expect(ai.articles.every((article) => article.topic === "AI")).toBe(true);
-    const one = listBundledArticles({ mode: "demo", q: "Compute Cartel" });
+    const one = listBundledArticles({ mode: "demo", q: "Doom Analysis" });
     expect(one.articles).toHaveLength(1);
+    const byAuthor = listBundledArticles({ mode: "demo", q: "Mike Solana" });
+    expect(byAuthor.articles.length).toBeGreaterThan(0);
+    expect(byAuthor.articles.every((article) => article.author === "Mike Solana")).toBe(true);
+    expect(listBundledArticles({ mode: "demo", q: "Solana nuclear" }).articles).toHaveLength(0);
+    expect(listBundledArticles({ mode: "demo", q: "Lawsuit Barrage" }).articles).toHaveLength(1);
+    const crossed = listBundledArticles({ mode: "demo", q: "Solana Doom" });
+    expect(crossed.articles.map((article) => article.headline)).toEqual(["Doom Analysis"]);
+    expect(one.articles[0]?.author).toBe("Mike Solana");
+    expect(one.articles[0]?.publishedAt).toBe("2026-10-06");
+    expect(one.articles[0]?.url).toBe("https://www.piratewires.com/p/doom-analysis");
+    expect(one.articles[0]?.publicationVerified).toBe(true);
+    const all = listBundledArticles({ mode: "demo", limit: 100 });
+    expect(all.articles.every((article) => article.publicationVerified && article.url.startsWith("https://www.piratewires.com/p/"))).toBe(true);
+    expect(all.articles.some((article) => article.headline.includes("Compute Cartel"))).toBe(false);
   });
 
   it("builds a labelled simulated report and skips audience measurement", async () => {
@@ -33,6 +47,11 @@ describe("bundled demo", () => {
       (event) => events.push(event),
     );
     expect(report.provenance).toBe("simulated");
+    const named = await executeBundledResearch(
+      { query: "Doom Analysis", mode: "demo", yieldMs: 0 },
+      () => undefined,
+    );
+    expect(named.report.articleIds).toEqual(["pw-015"]);
     expect(report.headline).toMatch(/reach vs archive/);
     expect(report.findings.length).toBeGreaterThan(0);
     expect(report.limitations.some((line) => /not Pirate Wires performance/i.test(line))).toBe(true);

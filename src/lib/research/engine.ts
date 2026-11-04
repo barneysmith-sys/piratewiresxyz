@@ -9,7 +9,7 @@
  *
  * Set NEXT_PUBLIC_RESEARCH_ENDPOINT to switch to the live engine.
  */
-import { getArticles } from "@/lib/data/articles";
+import type { Article } from "@/lib/data/types";
 import { fmt } from "@/lib/format";
 import { buildReport, channelTable, resolveScope, scoreArticles } from "./analyze";
 import type { ResearchEngine, ResearchEvent, ResearchRequest, StageId } from "./types";
@@ -25,10 +25,14 @@ const sleep = (ms: number, signal: AbortSignal) =>
 
 export class SimulatedEngine implements ResearchEngine {
   readonly mode = "simulated" as const;
-  constructor(private pace = 1) {}
+  constructor(
+    private pace = 1,
+    private articles: Article[] = [],
+  ) {}
 
   async run(req: ResearchRequest, { signal, onEvent }: { signal: AbortSignal; onEvent: (e: ResearchEvent) => void }) {
-    const all = getArticles();
+    const all = this.articles;
+    if (all.length === 0) throw new Error("The archive did not load, so the simulated run has no articles.");
     const { focus, rest, label } = resolveScope(req, all);
     const report = buildReport(req, all, "simulated");
     const ch = channelTable(focus, rest);
@@ -116,12 +120,12 @@ export class HttpEngine implements ResearchEngine {
       });
     } catch (error) {
       if (signal.aborted || req.mode === "analytical") throw error;
-      await new SimulatedEngine().run(req, { signal, onEvent });
+      await new SimulatedEngine(1, await loadArchive(req.mode ?? "demo", signal)).run(req, { signal, onEvent });
       return;
     }
     if (!res.ok || !res.body) {
       if (req.mode !== "analytical") {
-        await new SimulatedEngine().run(req, { signal, onEvent });
+        await new SimulatedEngine(1, await loadArchive(req.mode ?? "demo", signal)).run(req, { signal, onEvent });
         return;
       }
       throw new Error(`Research endpoint returned ${res.status}`);
@@ -146,6 +150,13 @@ export class HttpEngine implements ResearchEngine {
       }
     }
   }
+}
+
+async function loadArchive(mode: "demo" | "analytical", signal: AbortSignal): Promise<Article[]> {
+  const response = await fetch(`/api/articles?mode=${mode}&limit=100`, { signal });
+  if (!response.ok) throw new Error("The archive could not be loaded.");
+  const body = (await response.json()) as { data?: { articles?: Article[] } };
+  return body.data?.articles ?? [];
 }
 
 export function getResearchEngine(): ResearchEngine {

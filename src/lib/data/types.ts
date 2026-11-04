@@ -44,14 +44,20 @@ export interface Article {
   author: string;
   publishedAt: string; // ISO date
   topic: Topic;
+  /** Publication section, when the site states one. Null means it was not confirmed. */
+  category?: string | null;
   url: string;
   readMinutes: number;
   metrics: ArticleMetrics;
   distribution: ChannelDistribution[];
   /** daily views for the first 14 days after publication */
   trend: number[];
-  /** true for illustrative sample records. Never mix with live data unflagged. */
+  /** true when views and the other performance figures are illustrative. */
   demo: boolean;
+  /** true when the headline, byline, date and URL were checked against the publication. */
+  publicationVerified?: boolean;
+  /** verified, unverified, incorrect, or excluded. Performance figures are separate. */
+  verificationStatus?: "verified" | "unverified" | "incorrect" | "excluded";
   /** Database primary key when the row was loaded from the API. */
   recordId?: string;
   sourceName?: string;

@@ -46,7 +46,7 @@ export async function overviewAnalytics(mode: DatasetMode) {
       mode: "demo" as const,
       illustrative: true,
       articleCount: list.articles.length,
-      note: "Counts of the labelled illustrative corpus. Not Pirate Wires performance.",
+      note: "Article count is the verified publication sample. Performance figures are illustrative, not Pirate Wires analytics.",
       unavailable: ["age-aligned baseline", "engagement rate", "first-party audience"],
     };
   }
