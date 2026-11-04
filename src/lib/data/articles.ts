@@ -280,6 +280,7 @@ export function buildIllustrativeCorpus(): Article[] {
       author: article.author,
       publishedAt: article.publishedAt,
       topic,
+      category: null,
       url: `https://www.piratewires.com/p/${article.slug}`,
       readMinutes: Math.round(6 + rand() * 12),
       metrics: {
@@ -294,6 +295,7 @@ export function buildIllustrativeCorpus(): Article[] {
       trend,
       demo: true,
       publicationVerified: true,
+      verificationStatus: "verified",
       sourceName: "Pirate Wires",
       excerpt: article.subtitle,
     };

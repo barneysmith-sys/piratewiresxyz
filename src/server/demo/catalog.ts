@@ -1,4 +1,5 @@
 import { getArticles } from "@/lib/data/articles";
+import { recordMatchesQuery } from "@/lib/data/search";
 import type { DatasetMode } from "@/lib/data/mode";
 import type { Article } from "@/lib/data/types";
 import type { ArticleList } from "@/server/articles/query";
@@ -10,6 +11,7 @@ export function bundledCorpus(): Article[] {
     ...article,
     demo: true,
     publicationVerified: article.publicationVerified ?? false,
+    verificationStatus: article.verificationStatus,
     sourceName: article.sourceName ?? SOURCE,
     excerpt: article.excerpt,
   }));
@@ -33,14 +35,12 @@ export function listBundledArticles(input: {
   }
 
   const limit = Math.min(Math.max(input.limit ?? 100, 1), 100);
-  const needle = input.q?.trim().toLowerCase();
   const topic = input.topic?.trim().toLowerCase();
   const articles = bundledCorpus()
     .filter((article) => {
       if (input.id && article.id !== input.id) return false;
       if (topic && article.topic.toLowerCase() !== topic) return false;
-      if (!needle) return true;
-      return `${article.headline} ${article.author} ${article.url} ${article.topic}`.toLowerCase().includes(needle);
+      return recordMatchesQuery(article, input.q ?? "");
     })
     .slice(0, limit);
 

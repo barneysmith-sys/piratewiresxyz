@@ -151,6 +151,8 @@ export async function seedIllustrativeCorpus(session: SqlSession): Promise<{ see
         fixture: "claude-design-corpus",
         publicId: article.id,
         publicationVerified: article.publicationVerified === true,
+        verificationStatus: article.verificationStatus ?? null,
+        category: article.category ?? null,
         readMinutes: article.readMinutes,
         engagedSec: article.metrics.engagedSec,
         completion: article.metrics.completion,

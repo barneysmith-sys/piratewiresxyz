@@ -6,6 +6,7 @@
  * backend can reuse the same shapes with richer sources.
  */
 import { fmt } from "@/lib/format";
+import { searchTokens } from "@/lib/data/search";
 import { CHANNELS, TOPICS, type Article, type Topic } from "@/lib/data/types";
 import type { ChannelRow, Finding, Recommendation, ResearchReport, ResearchRequest, TopicRow } from "./types";
 
@@ -27,6 +28,22 @@ export function resolveScope(req: ResearchRequest, all: Article[]) {
     return { defaulted: false, focus, rest: all.filter((a) => !set.has(a.id)), topic: null as Topic | null, label: `${focus.length} selected article${focus.length > 1 ? "s" : ""}` };
   }
   const detected = detectTopic(req.query);
+  const tokens = searchTokens(req.query);
+  const hits =
+    tokens.length === 0
+      ? []
+      : all.filter((article) => tokens.every((token) => `${article.headline} ${article.author}`.toLowerCase().includes(token)));
+  // A headline or byline query should not fall through to a whole topic.
+  if (!detected && hits.length > 0) {
+    const ids = new Set(hits.map((article) => article.id));
+    return {
+      defaulted: false,
+      focus: hits,
+      rest: all.filter((article) => !ids.has(article.id)),
+      topic: null,
+      label: hits.length === 1 ? hits[0].headline : `${hits.length} matching articles`,
+    };
+  }
   const topic = detected ?? "AI";
   return {
     focus: all.filter((a) => a.topic === topic),

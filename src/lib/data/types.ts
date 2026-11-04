@@ -44,6 +44,8 @@ export interface Article {
   author: string;
   publishedAt: string; // ISO date
   topic: Topic;
+  /** Publication section, when the site states one. Null means it was not confirmed. */
+  category?: string | null;
   url: string;
   readMinutes: number;
   metrics: ArticleMetrics;
@@ -54,6 +56,8 @@ export interface Article {
   demo: boolean;
   /** true when the headline, byline, date and URL were checked against the publication. */
   publicationVerified?: boolean;
+  /** verified, unverified, incorrect, or excluded. Performance figures are separate. */
+  verificationStatus?: "verified" | "unverified" | "incorrect" | "excluded";
   /** Database primary key when the row was loaded from the API. */
   recordId?: string;
   sourceName?: string;

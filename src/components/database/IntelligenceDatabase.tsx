@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { DemoBadge, Sparkline } from "@/components/ui/primitives";
 import { cx, fmt } from "@/lib/format";
 import type { DatasetMode } from "@/lib/data/mode";
+import { recordMatchesQuery } from "@/lib/data/search";
 import { TOPICS, type Article, type ObservedRecord, type Topic } from "@/lib/data/types";
 import ArticleDrawer from "./ArticleDrawer";
 
@@ -48,11 +49,10 @@ export default function IntelligenceDatabase({ articles, observed = [], mode = "
   const authors = useMemo(() => [...new Set(articles.map((article) => article.author))].sort((a, b) => a.localeCompare(b)), [articles]);
 
   const rows = useMemo(() => {
-    const needle = q.trim().toLowerCase();
     return articles
       .filter((a) => topic === "All" || a.topic === topic)
       .filter((a) => author === "All" || a.author === author)
-      .filter((a) => !needle || `${a.headline} ${a.author} ${a.url} ${a.topic}`.toLowerCase().includes(needle))
+      .filter((a) => recordMatchesQuery(a, q))
       .sort((a, b) => {
         const va = sortValue(a, sort.key);
         const vb = sortValue(b, sort.key);
