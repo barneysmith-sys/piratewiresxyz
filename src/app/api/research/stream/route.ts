@@ -11,6 +11,8 @@ const bodySchema = z.object({
   mode: z.enum(["demo", "analytical"]).default("analytical"),
 });
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   await connection();
   let json: unknown;

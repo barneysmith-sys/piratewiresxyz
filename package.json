@@ -2,6 +2,9 @@
   "name": "piratewiresxyz",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "description": "PW / INTELLIGENCE — media intelligence foundation for Pirate Wires.",
   "scripts": {
     "dev": "next dev",

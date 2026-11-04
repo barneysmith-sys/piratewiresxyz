@@ -6,7 +6,11 @@ import { seedIllustrativeCorpus } from "@/server/demo/seed";
 import { getServerEnv } from "@/server/env";
 import { applyMigrations, type SqlSession } from "./migrate";
 
-const sandboxDirectory = path.join(process.cwd(), "data", "sandbox");
+/** Local disk, or the only writable directory on Vercel when no Postgres URL is set. */
+export function resolveSandboxDirectory(env: Record<string, string | undefined> = process.env): string {
+  if (env.VERCEL) return "/tmp/pw-intelligence-sandbox";
+  return path.join(process.cwd(), "data", "sandbox");
+}
 
 let opening: Promise<SqlSession> | null = null;
 
@@ -36,6 +40,7 @@ async function open(): Promise<SqlSession> {
     });
     session = postgresSession(sql);
   } else {
+    const sandboxDirectory = resolveSandboxDirectory();
     mkdirSync(path.dirname(sandboxDirectory), { recursive: true });
     const database = new PGlite(sandboxDirectory);
     await database.waitReady;
@@ -57,8 +62,8 @@ async function open(): Promise<SqlSession> {
 }
 
 /**
- * One server session. Postgres when DATABASE_URL is set; otherwise a file-backed
- * PGlite sandbox so the interface can run without hosted credentials.
+ * One server session. Postgres when DATABASE_URL is set. Otherwise a PGlite
+ * sandbox: data/sandbox locally, or an ephemeral /tmp database on Vercel.
  */
 export function getSession(): Promise<SqlSession> {
   opening ??= open().catch((error) => {

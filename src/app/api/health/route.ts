@@ -1,8 +1,10 @@
 import { connection } from "next/server";
 import { checkDatabase } from "@/server/db/health";
-import { getSession } from "@/server/db/session";
+import { getSession, resolveSandboxDirectory } from "@/server/db/session";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
+
+export const maxDuration = 60;
 
 export async function GET() {
   // Health depends on the live environment. Do not prerender it.
@@ -16,7 +18,7 @@ export async function GET() {
         service: "pw-intelligence",
         status: "ok",
         database: "sandbox",
-        store: "local-pglite",
+        store: resolveSandboxDirectory().startsWith("/tmp/") ? "ephemeral-pglite" : "local-pglite",
         phase: "integrated",
       });
     }

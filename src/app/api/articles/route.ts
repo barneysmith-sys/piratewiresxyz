@@ -12,6 +12,8 @@ const filters = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(100),
 });
 
+export const maxDuration = 60;
+
 export async function GET(request: Request) {
   await connection();
   const mode = datasetMode(request);

@@ -7,6 +7,8 @@ import { apiError, apiSuccess } from "@/server/http";
 import { datasetMode, isResponse } from "@/server/dataset";
 import { log } from "@/server/log";
 
+export const maxDuration = 60;
+
 export async function GET(request: Request) {
   await connection();
   const mode = datasetMode(request);

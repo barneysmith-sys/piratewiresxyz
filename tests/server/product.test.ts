@@ -1,3 +1,4 @@
+import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { median, describeReach } from "../../src/server/analytics/reach";
@@ -5,6 +6,7 @@ import { confirmedTopicCounts } from "../../src/server/analytics/topics";
 import { listArticles } from "../../src/server/articles/query";
 import { seedIllustrativeCorpus } from "../../src/server/demo/seed";
 import { applyMigrations, type SqlSession } from "../../src/server/db/migrate";
+import { resolveSandboxDirectory } from "../../src/server/db/session";
 import { executeResearch } from "../../src/server/research/execute";
 
 let db: PGlite;
@@ -20,6 +22,13 @@ function session(database: PGlite): SqlSession {
     },
   };
 }
+
+describe("sandbox location", () => {
+  it("uses local disk in development and /tmp on Vercel", () => {
+    expect(resolveSandboxDirectory({})).toBe(path.join(process.cwd(), "data", "sandbox"));
+    expect(resolveSandboxDirectory({ VERCEL: "1" })).toBe("/tmp/pw-intelligence-sandbox");
+  });
+});
 
 describe("reach calculations", () => {
   it("returns the middle value and withholds a baseline below the sample minimum", () => {

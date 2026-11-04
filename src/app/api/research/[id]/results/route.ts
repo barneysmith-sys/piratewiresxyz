@@ -3,6 +3,8 @@ import { getSession } from "@/server/db/session";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
 
+export const maxDuration = 60;
+
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   await connection();
   const { id } = await context.params;
