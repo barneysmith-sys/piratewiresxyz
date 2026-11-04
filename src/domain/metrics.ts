@@ -67,7 +67,7 @@ export const metricCatalog: readonly MetricDefinition[] = [
   {
     id: "topic.article_count",
     name: "Articles by topic",
-    status: "specified",
+    status: "implemented",
     definition:
       "Count of observed articles with a confirmed topic assignment. Proposed and rejected assignments are reported separately.",
   },

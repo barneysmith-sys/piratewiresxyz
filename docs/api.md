@@ -27,29 +27,28 @@ Pagination is a cursor over the sort columns plus `id`, with a default limit of 
 | Method | Path | Behavior |
 | --- | --- | --- |
 | `GET` | `/api` | Static description of the service. No database read. |
-| `GET` | `/api/health` | `{ status, database, phase }`. `database` is `unconfigured`, `up`, or `down`. HTTP 503 when the check fails. Does not return rows. Runs on each request. |
+| `GET` | `/api/health` | Database status. `sandbox` means the local PGlite store is standing in because `DATABASE_URL` is unset. `up` / `down` describe Postgres. |
+| `GET` | `/api/articles?mode=` | `demo` returns the labelled illustrative corpus. `analytical` (the default) returns observed rows only. |
+| `GET` | `/api/articles/:id?mode=` | One article visible in that mode, including source name. An illustrative id is not found in analytical mode. |
+| `GET` | `/api/analytics/overview?mode=` | Implemented counts. Demo responses are labelled illustrative. Analytical responses do not include the fixture. |
+| `GET` | `/api/analytics/topics?mode=` | `topic.article_count` for confirmed topics on observed articles. Demo mode returns an empty count on purpose. |
+| `GET` | `/api/analytics/authors?mode=` | Primary-author article counts for the selected mode. |
+| `GET` | `/api/analytics/distribution` | Confirmed article/post links. The illustrative channel chart is not included. |
+| `GET` | `/api/analytics/performance?mode=` | Stored view totals. Baselines stay null until an age-aligned sample clears the minimum. |
+| `POST` | `/api/research` | Runs the five stages, stores the request, tasks and report, and returns the workspace report. |
+| `POST` | `/api/research/stream` | The same run as server-sent events for the workspace. |
+| `GET` | `/api/research/:id` | Request status and task rows. |
+| `GET` | `/api/research/:id/results` | Stored report, limitations, and execution mode. |
+
+`mode=demo` is the explicit switch for illustrative rows. The payload sets `illustrative: true`. Analytical routes never read those rows.
 
 ## Specified, not mounted
 
-These will be added when the module behind them exists. They are not stubbed, because an empty payload would look like a result.
-
 | Method | Path | Returns |
 | --- | --- | --- |
-| `GET` | `/api/articles` | Observed articles. Filters: query, author, topic, category, content type, from, to. Sort: publication time or an implemented metric. |
-| `GET` | `/api/articles/:id` | The article, authors, confirmed topics, tags, links (confirmation status included), metric history, and audience rows for that article. |
-| `GET` | `/api/analytics/overview` | Implemented catalog metrics for a named window, each with sample size. |
-| `GET` | `/api/analytics/topics` | Confirmed-topic aggregates. Proposed assignments are not folded in. |
-| `GET` | `/api/analytics/authors` | Author aggregates with article counts. |
-| `GET` | `/api/analytics/distribution` | Confirmed links by default. `confirmation=inferred` is a separate, labeled response. |
-| `GET` | `/api/analytics/performance` | Age-aligned series and baselines. `insufficient_sample` where the rules require it. |
 | `POST` | `/api/ingestion/articles` | Validated article batch. Duplicate URLs update. Errors come back per row. |
 | `POST` | `/api/ingestion/social-posts` | Posts and article links. Inferred links stay inferred. |
 | `POST` | `/api/ingestion/metrics` | Snapshots. Conflicts are rejections, not overwrites. |
-| `POST` | `/api/research` | Creates a request in `queued` and records `execution_mode`. |
-| `GET` | `/api/research/:id` | Request, task statuses, errors, timestamps. |
-| `GET` | `/api/research/:id/results` | The report, including limitations and the execution mode. |
-
-`includeIllustrative=true` is the only way a future route should return illustrative rows, and the payload must say that it did.
 
 ## Validation and errors
 
@@ -65,4 +64,4 @@ Request bodies use the Zod schemas in `src/domain/schemas.ts`. Expected codes:
 
 ## Access
 
-There is no authentication middleware yet. The mounted routes do not return editorial rows. Do not deploy the data routes on a public URL until staff access control is in place. Rate limits belong on the ingestion and research posts, not on this health check.
+There is no authentication middleware yet. Demo responses are fictional and labelled. Analytical responses are empty until observed rows are loaded. Do not deploy the data routes on a public URL until staff access control is in place.

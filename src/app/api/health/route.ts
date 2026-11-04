@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { checkDatabase } from "@/server/db/health";
+import { getSession } from "@/server/db/session";
 import { apiError, apiSuccess } from "@/server/http";
 import { log } from "@/server/log";
 
@@ -9,13 +10,24 @@ export async function GET() {
 
   try {
     const database = await checkDatabase();
+    if (database.status === "unconfigured") {
+      await getSession();
+      return apiSuccess({
+        service: "pw-intelligence",
+        status: "ok",
+        database: "sandbox",
+        store: "local-pglite",
+        phase: "integrated",
+      });
+    }
     const degraded = database.status === "down";
     return apiSuccess(
       {
         service: "pw-intelligence",
         status: degraded ? "degraded" : "ok",
         database: database.status,
-        phase: "foundation",
+        store: "postgres",
+        phase: "integrated",
       },
       degraded ? 503 : 200,
     );

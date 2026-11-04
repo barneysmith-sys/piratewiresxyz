@@ -9,11 +9,13 @@ export type SqlSession = {
 };
 
 export async function loadMigrations(directory = migrationsDirectory) {
-  const names = (await readdir(directory)).filter((name) => name.endsWith(".sql")).sort();
+  const names = (await readdir(/*turbopackIgnore: true*/ directory))
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
   return Promise.all(
     names.map(async (name) => ({
       name,
-      sql: await readFile(path.join(directory, name), "utf8"),
+      sql: await readFile(/*turbopackIgnore: true*/ path.join(/*turbopackIgnore: true*/ directory, name), "utf8"),
     })),
   );
 }

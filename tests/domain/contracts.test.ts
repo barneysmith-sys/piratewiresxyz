@@ -36,9 +36,9 @@ describe("schema contract", () => {
 });
 
 describe("analytical catalog", () => {
-  it("does not claim that specified calculations are implemented", () => {
+  it("marks a calculation implemented only when a tested function produces it", () => {
     expect(metricCatalog.length).toBeGreaterThan(0);
-    expect(implementedMetricIds).toEqual([]);
+    expect(implementedMetricIds).toEqual(["topic.article_count"]);
     expect(opportunitySignals.every((signal) => signal.claimType === "hypothesis")).toBe(true);
     expect(opportunitySignals.every((signal) => signal.status === "specified")).toBe(true);
   });

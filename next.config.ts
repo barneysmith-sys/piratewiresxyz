@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // PGlite ships a WASM build that must stay outside the server bundle.
+  serverExternalPackages: ["@electric-sql/pglite"],
+  outputFileTracingIncludes: {
+    "/api/**": ["./supabase/migrations/**/*"],
+  },
 };
 
 export default nextConfig;

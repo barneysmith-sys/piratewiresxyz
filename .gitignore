@@ -41,3 +41,6 @@ next-env.d.ts
 # supabase local state
 supabase/.branches
 supabase/.temp
+
+# local sandbox database (used when DATABASE_URL is unset)
+/data

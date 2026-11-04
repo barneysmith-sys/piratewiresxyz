@@ -12,7 +12,9 @@ Done in this change.
 - `GET /api` and `GET /api/health`.
 - Schema tests on embedded Postgres, plus contract tests.
 
-Not done, and not claimed: a hosted Supabase project, editorial rows, or a visual interface.
+Not done, and not claimed: a hosted Supabase project or real Pirate Wires articles.
+
+The interface, the labelled illustrative corpus, `topic.article_count`, and research orchestration now run in this app. Ingestion batches and the rest of the metric catalog are still open. Analytical mode stays empty until observed rows exist.
 
 ## Phase 2 — Ingestion
 
@@ -20,19 +22,19 @@ CSV, JSON, manual article creation, social posts, and metric snapshots. Adapters
 
 ## Phase 3 — Analytics
 
-Implement the catalog one metric at a time. Each implementation flips that entry from `specified` to `implemented` and adds a test with a fixture whose result can be checked by hand. Queries read the analytical views. They accept an explicit illustrative flag only for demos.
+`topic.article_count` is implemented: confirmed topics on observed articles, with a hand-checked test. Illustrative assignments do not enter it. The remaining catalog entries stay `specified`. Lifetime view totals are described and are not treated as an age-aligned baseline.
 
 ## Phase 4 — API
 
-Mount the routes in `docs/api.md`. Cursor pagination. Validation errors use the envelope. Every aggregate response includes the ids needed to open the underlying articles and snapshots.
+Article, analytics, and research routes are mounted and use the response envelope. List responses carry `limit` and `nextCursor`. Ingestion routes are still unmounted.
 
 ## Phase 5 — Research orchestration
 
-Persist a request, run the five stages, and store task inputs, outputs, errors, and source references. Skip audience analysis when `audience_observations` has no analytical rows, and write that skip down. Synthesis may call a language model only with the structured findings. The report's execution mode is copied from the request. Simulated execution has to be labeled and is not a substitute for the stages.
+A request, five task rows, and a report are stored. Audience analysis is skipped, and that skip is stored, when no first-party audience rows exist. Demo runs are `execution_mode = simulated` and labelled in the workspace. No language model is called.
 
 ## Phase 6 — Design integration
 
-Replace nothing in the visual design. Add pages where the design files say they go. Point them at the routes. Do not recalculate metrics in components.
+Done for the supplied Claude handoff. The Capitol scene, archive, article sheet, and research workspace are the design's components. The untouched handoff is in `design-handoff/claude-piratewires-intelligence/`. Components read the API. They do not recalculate metrics.
 
 ## Phase 7 — Demonstration
 
