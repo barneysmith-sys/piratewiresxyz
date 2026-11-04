@@ -1,0 +1,131 @@
+/* Bundled fonts (public/fonts, SIL OFL). No network calls at build or runtime. */
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fonts/barlow-condensed-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter Variable"; font-weight: 100 900; font-style: normal; font-display: swap; src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2-variations"); }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --font-display: "Barlow Condensed";
+  --font-mono: "IBM Plex Mono";
+  --font-sans: "Inter Variable";
+  --pw-void: #080d1b;
+  --pw-paper: #f3f0e9;
+  --pw-signal: #e31b2b;
+  --pw-amber: #d9a45b;
+}
+
+@layer base {
+  html {
+    background: var(--pw-void);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-void font-sans text-paper;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgba(227, 27, 43, 0.85);
+    color: #f3f0e9;
+  }
+  :focus-visible {
+    outline: 1px solid var(--pw-paper);
+    outline-offset: 2px;
+  }
+  /* thin, quiet scrollbars inside panels */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #303b50 transparent;
+  }
+}
+
+@layer components {
+  /* Tiny uppercase mono label used for every section header / column header */
+  .pw-label {
+    @apply font-mono text-2xs uppercase text-mute;
+  }
+  /* Hairline panel used across the app */
+  .pw-panel {
+    @apply border border-line bg-ink-900;
+  }
+  /* Technical corner ticks around a box (used on hero search + panels) */
+  .pw-ticks {
+    position: relative;
+  }
+  .pw-ticks::before,
+  .pw-ticks::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+  .pw-ticks::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+  .pw-ticks::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+  /* Square, hairline checkbox */
+  .pw-check {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    display: inline-grid;
+    place-content: center;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .pw-check:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+  .pw-check:checked {
+    border-color: var(--pw-signal);
+    background: var(--pw-signal);
+  }
+  .pw-check:checked::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--pw-void);
+  }
+  /* Dot lattice: the flattened terrain the hero resolves into */
+  .pw-lattice {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
