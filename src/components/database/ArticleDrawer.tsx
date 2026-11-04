@@ -67,21 +67,27 @@ export default function ArticleDrawer({ article, onClose, onResearch }: Props) {
 
             <div className="flex-1 overflow-y-auto px-6 pb-10 pt-6">
               <p className="pw-label">
-                <span className="text-paper/80">{article.topic}</span> · {fmt.date(article.publishedAt)} · {article.readMinutes} min
+                <span className="text-paper/80">{article.topic}</span> · {fmt.date(article.publishedAt)}
+                {article.demo ? " · illustrative metrics" : ` · ${article.readMinutes} min`}
               </p>
               <h3 className="mt-3 font-display text-[34px] font-bold uppercase leading-[0.95]">{article.headline}</h3>
               <p className="mt-3 text-[14px] text-paper-dim">By {article.author}</p>
               <p className="mt-3 font-mono text-[11.5px] leading-relaxed text-mute">
-                Source · {article.sourceName ?? "Unspecified"} · {article.demo ? "illustrative fixture, excluded from analytical totals" : "observed record"}
+                Source · {article.sourceName ?? "Unspecified"} ·{" "}
+                {article.publicationVerified
+                  ? "publication record verified. Views and the figures below are illustrative and are excluded from analytical totals."
+                  : article.demo
+                    ? "illustrative fixture, excluded from analytical totals"
+                    : "observed record"}
                 {article.excerpt ? ` · ${article.excerpt}` : ""}
               </p>
-              {article.demo ? (
+              {article.demo && !article.publicationVerified ? (
                 <p className="mt-3 font-mono text-[12px] text-mute">
                   Fixture path · {fmt.path(article.url)}. This is not a published Pirate Wires URL.
                 </p>
               ) : (
                 <a href={article.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex max-w-full items-center gap-2 font-mono text-[12px] text-paper underline decoration-line-strong underline-offset-4 hover:decoration-paper">
-                  <span className="truncate">{fmt.path(article.url)}</span>
+                  <span className="truncate">{article.url}</span>
                   <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
                 </a>
               )}
@@ -95,16 +101,16 @@ export default function ArticleDrawer({ article, onClose, onResearch }: Props) {
                 className="mt-2 inline-flex items-center gap-2 font-mono text-[12px] text-mute hover:text-paper"
               >
                 <Copy className="h-3.5 w-3.5 shrink-0" />
-                {copied ? "Copied fixture path" : "Copy path"}
+                {copied ? "Copied" : article.publicationVerified ? "Copy article URL" : "Copy path"}
               </button>
 
               <div className="mt-8 grid grid-cols-3 gap-x-6 gap-y-8 border-y border-line py-6">
-                <Metric label="Views" value={fmt.compact(article.metrics.views)} />
-                <Metric label="Engaged" value={fmt.duration(article.metrics.engagedSec)} />
-                <Metric label="Read-through" value={fmt.pct(article.metrics.completion)} />
-                <Metric label="Shares" value={fmt.compact(article.metrics.shares)} />
-                <Metric label="Comments" value={fmt.int(article.metrics.comments)} />
-                <Metric label="Subs gained" value={fmt.int(article.metrics.subsGained)} tone="focus" />
+                <Metric label={article.demo ? "Fixture views" : "Views"} value={fmt.compact(article.metrics.views)} />
+                <Metric label={article.demo ? "Fixture engaged" : "Engaged"} value={fmt.duration(article.metrics.engagedSec)} />
+                <Metric label={article.demo ? "Fixture read-through" : "Read-through"} value={fmt.pct(article.metrics.completion)} />
+                <Metric label={article.demo ? "Fixture shares" : "Shares"} value={fmt.compact(article.metrics.shares)} />
+                <Metric label={article.demo ? "Fixture comments" : "Comments"} value={fmt.int(article.metrics.comments)} />
+                <Metric label={article.demo ? "Fixture subs" : "Subs gained"} value={fmt.int(article.metrics.subsGained)} tone="focus" />
               </div>
 
               <p className="pw-label mt-8">Daily views · first 14 days</p>

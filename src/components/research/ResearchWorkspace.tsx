@@ -66,7 +66,7 @@ export default function ResearchWorkspace() {
       <main className="relative z-10 mx-auto max-w-[1440px] px-4 pb-24 pt-32 md:px-8 md:pt-28">
         <p className="mb-8 border-l-2 border-signal bg-ink-900 px-4 py-2.5 font-mono text-[11.5px] leading-relaxed text-paper-dim">
           {datasetMode === "demo"
-            ? "Simulated demo. The five stages read the labelled illustrative corpus. These figures are not Pirate Wires performance, and no external model is called."
+            ? "Simulated demo. The five stages read verified Pirate Wires articles. Performance figures are illustrative, not publication analytics, and no external model is called."
             : "Analytical mode. Illustrative records are excluded. Empty measurements stay empty."}
           {lens ? ` Lens: ${lens}.` : ""}
         </p>

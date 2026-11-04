@@ -12,13 +12,13 @@ The demonstration is deployed on Vercel:
 - Production URL: https://piratewiresxyz.vercel.app
 - Production branch: `cursor/intelligence-foundation-6a5a`
 - Framework preset: Next.js. Node.js 22. Output directory left empty.
-- `DATABASE_URL` stays unset. The deployment serves the 26 bundled illustrative articles from memory. It does not write a database to disk and it does not call an external model. No API key is required.
+- `DATABASE_URL` stays unset. The deployment serves 26 bundled articles from memory. Headlines, bylines, dates and URLs are from the public Pirate Wires archive. Views and the other performance figures are illustrative. It does not write a database to disk and it does not call an external model. No API key is required.
 
 Do not merge this branch into `main` unless that merge is explicitly approved. `main` is still the README-only repository root, and GitHub Pages publishes from it.
 
-Set `DATABASE_URL` only when a hosted Postgres database should replace the fixture. `PW_STORE=pglite` forces the local sandbox even on Vercel. `PW_STORE=memory` forces the bundled fixture locally. For a demonstration on hosted Postgres, set `SEED_ILLUSTRATIVE=true` for one deployment so the fictional corpus is loaded. Analytical mode still ignores it.
+Set `DATABASE_URL` only when a hosted Postgres database should replace the fixture. `PW_STORE=pglite` forces the local sandbox even on Vercel. `PW_STORE=memory` forces the bundled fixture locally. For a demonstration on hosted Postgres, set `SEED_ILLUSTRATIVE=true` for one deployment so the verified publication sample is loaded with illustrative metrics. Analytical mode still ignores those rows.
 
-Demo mode shows a labelled illustrative corpus. Those records are fictional and are stored with `record_status = illustrative`. Analytical mode reads observed rows only. If none are loaded, the archive and the research report say so. Missing measurements are left blank.
+Demo mode shows that sample. Publication metadata is real. Performance figures are illustrative, and the rows are stored with `record_status = illustrative`. Analytical mode reads observed rows only. If none are loaded, the archive and the research report say so. Missing measurements are left blank.
 
 ## Run
 
@@ -45,7 +45,7 @@ Copy `.env.example` locally, and set the same names in the Vercel project. All o
 | --- | --- | --- |
 | `DATABASE_URL` | Optional for the demo. Required only when observed rows should be read from Postgres | Runtime connection. Supabase transaction pooler, port 6543. `prepare` is disabled for the pooler. |
 | `DIRECT_DATABASE_URL` | Used by `npm run db:migrate`, not by the running app | Direct connection, port 5432. |
-| `SEED_ILLUSTRATIVE` | Optional | `true` loads the fictional corpus into that database. The local and `/tmp` sandboxes load it without this flag. |
+| `SEED_ILLUSTRATIVE` | Optional | `true` loads the verified publication sample, with illustrative metrics, into that database. The local and `/tmp` sandboxes load it without this flag. |
 | `NEXT_PUBLIC_RESEARCH_ENDPOINT` | Leave unset | Override only if research is hosted elsewhere. The default is same-origin `/api/research/stream`. |
 
 Do not put database credentials in a `NEXT_PUBLIC_` variable. There is no client-side Supabase key. Do not set `GITHUB_PAGES` or a static `output: "export"` in Next config.

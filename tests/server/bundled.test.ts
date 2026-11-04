@@ -22,8 +22,15 @@ describe("bundled demo", () => {
     const ai = listBundledArticles({ mode: "demo", topic: "AI" });
     expect(ai.articles.length).toBeGreaterThan(0);
     expect(ai.articles.every((article) => article.topic === "AI")).toBe(true);
-    const one = listBundledArticles({ mode: "demo", q: "Compute Cartel" });
+    const one = listBundledArticles({ mode: "demo", q: "Doom Analysis" });
     expect(one.articles).toHaveLength(1);
+    expect(one.articles[0]?.author).toBe("Mike Solana");
+    expect(one.articles[0]?.publishedAt).toBe("2026-10-06");
+    expect(one.articles[0]?.url).toBe("https://www.piratewires.com/p/doom-analysis");
+    expect(one.articles[0]?.publicationVerified).toBe(true);
+    const all = listBundledArticles({ mode: "demo", limit: 100 });
+    expect(all.articles.every((article) => article.publicationVerified && article.url.startsWith("https://www.piratewires.com/p/"))).toBe(true);
+    expect(all.articles.some((article) => article.headline.includes("Compute Cartel"))).toBe(false);
   });
 
   it("builds a labelled simulated report and skips audience measurement", async () => {

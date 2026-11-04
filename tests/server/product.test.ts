@@ -65,7 +65,9 @@ describe("illustrative corpus isolation", () => {
     expect(demo.illustrative).toBe(true);
     expect(demo.articles.length).toBeGreaterThan(20);
     expect(demo.articles.every((article) => article.demo)).toBe(true);
-    expect(demo.articles[0]?.sourceName).toContain("Illustrative");
+    expect(demo.articles[0]?.sourceName).toBe("Pirate Wires");
+    expect(demo.articles.every((article) => article.publicationVerified)).toBe(true);
+    expect(demo.articles.every((article) => article.url.startsWith("https://www.piratewires.com/p/"))).toBe(true);
     expect(analytical.observed).toEqual([]);
     expect(analytical.articles).toEqual([]);
     expect(analytical.emptyReason).toMatch(/illustrative/i);

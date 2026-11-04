@@ -3,15 +3,15 @@ import type { DatasetMode } from "@/lib/data/mode";
 import type { Article } from "@/lib/data/types";
 import type { ArticleList } from "@/server/articles/query";
 
-const SOURCE = "Illustrative sandbox corpus";
-const EXCERPT = "Fictional record generated for this demonstration. Not a Pirate Wires article.";
+const SOURCE = "Pirate Wires";
 
 export function bundledCorpus(): Article[] {
   return getArticles().map((article) => ({
     ...article,
     demo: true,
-    sourceName: SOURCE,
-    excerpt: EXCERPT,
+    publicationVerified: article.publicationVerified ?? false,
+    sourceName: article.sourceName ?? SOURCE,
+    excerpt: article.excerpt,
   }));
 }
 

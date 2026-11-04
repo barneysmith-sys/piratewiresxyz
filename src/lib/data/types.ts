@@ -50,8 +50,10 @@ export interface Article {
   distribution: ChannelDistribution[];
   /** daily views for the first 14 days after publication */
   trend: number[];
-  /** true for illustrative sample records. Never mix with live data unflagged. */
+  /** true when views and the other performance figures are illustrative. */
   demo: boolean;
+  /** true when the headline, byline, date and URL were checked against the publication. */
+  publicationVerified?: boolean;
   /** Database primary key when the row was loaded from the API. */
   recordId?: string;
   sourceName?: string;

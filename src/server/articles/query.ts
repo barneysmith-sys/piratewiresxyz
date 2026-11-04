@@ -12,6 +12,7 @@ export type ArticleList = {
 
 type FixtureRaw = {
   publicId?: string;
+  publicationVerified?: boolean;
   readMinutes?: number;
   engagedSec?: number;
   completion?: number;
@@ -222,6 +223,7 @@ export async function listArticles(
       distribution,
       trend: trend.slice(0, 14),
       demo: row.record_status === "illustrative",
+      publicationVerified: raw.publicationVerified === true,
       sourceName: row.source_name,
       excerpt: row.excerpt,
     });
